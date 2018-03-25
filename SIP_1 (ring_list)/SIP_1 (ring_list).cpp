@@ -54,7 +54,6 @@ public:
 	}
 
 
-
 	//Добавление в начало списка
 	void addToBegin(T value) // add_to_begin / add_begin
 	{
@@ -152,9 +151,9 @@ public:
 
 			}
 			cout << "\n Spisok udalen\n";
+			head = NULL; //Обнуляем голову
 		}
 	}
-
 
 	//упорядочение нового элемента
 	void sort_elem(T value) {
@@ -267,6 +266,14 @@ public:
 		return (head != NULL); // если список отсутствует ()
 	}
 
+	const List<T>& operator=(const List<T>& rList)
+	{
+		if (rList )
+		{
+			cout << "as";
+		}
+	}
+
 
 	/*bool operator= (T& student_test) {
 	TElem *elemVal = student_test.head, *elem = head, *Next;
@@ -278,12 +285,12 @@ public:
 		if (head)
 		{
 			tail->Next = NULL;
-			while (head != NULL)  //Пока по адресу не пусто
+			do   //Пока по адресу не пусто
 			{
 				TElem *temp = head; //Временная переменная для хранения адреса следующего элемента
 				head = head->Next;
 				delete temp; //Освобождаем адрес обозначающий начало
-			}
+			} while (head != NULL);
 		}
 	}
 
@@ -305,7 +312,12 @@ int main()
 	cout << " My list " << endl;
 	student_test.show();
 
+	cout << "Test1\n";
+	List<int> student_test1;
+	student_test1 = student_test;
+	student_test1.show();
 
+	/*
 	//add to end
 	tmp = rand() % 100;
 	cout << endl << "\n Add to end " << tmp << endl;
@@ -352,16 +364,16 @@ int main()
 	cin >> a;
 	student_test.sort_elem(a);
 	student_test.show();
-
+	
 	//delete all
 	cout << "\n\n Udalit' spisok\n";
 	student_test.del_all();
 	*/
 	//перегруженный оператор !, определяющий существование элементов в структуре данных
 
-	List<int> student_test1;
+	//List<int> student_test3;
 	//student_test1 = student_test;
-	student_test1.show();
+	//student_test1.show();
 
 	/*if (!student_test) cout << "\n Список не пуст\n";
 	else cout << "\n Список пуст\n";

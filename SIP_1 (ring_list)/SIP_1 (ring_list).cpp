@@ -261,17 +261,39 @@ public:
 	return *this;
 	}
 	*/
+	
+	bool isEmpty() const
+	{
+		return head == 0;
+	}
+
 	//перегруженный оператор !, определяющий существование элементов в структуре данных
 	bool operator! () {
 		return (head != NULL); // если список отсутствует ()
 	}
 
-	const List<T>& operator=(const List<T>& rList)
+	TElem* getHead()
 	{
-		if (rList )
+		return head;
+	}
+
+	List<T>& operator=(List<T>& right)
+	{
+		if (!right.isEmpty())
 		{
-			cout << "as";
+			TElem *rightHead = right.getHead(); // получение головы списка из которого копируем
+			TElem *rightCurrElem = rightHead; // текущий элемент из этого же списка
+
+			if (this == &right) {
+				return *this; // проверка на самоприсваивание
+			}
+			do
+			{
+				addToEnd(rightCurrElem->Inf);
+				rightCurrElem = rightCurrElem->Next;
+			} while (rightCurrElem != rightHead);
 		}
+		return *this;
 	}
 
 

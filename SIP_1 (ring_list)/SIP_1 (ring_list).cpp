@@ -150,7 +150,7 @@ public:
 				delete temp; //Освобождаем адрес обозначающий начало
 
 			}
-			cout << "\n Spisok udalen\n";
+			//cout << "\n Spisok udalen\n";
 			head = NULL; //Обнуляем голову
 		}
 	}
@@ -225,6 +225,7 @@ public:
 				elem = elem->Next; //доходим до конца списка
 			} while (elem != head); //в случае кольцевого списка проверяем есть ли данный элемент последним
 		}
+		cout << endl;
 	}
 	/*******************************************************************/
 	//метод, переводящий указатель на текущий элемент в начало(конец, при необходимости) списка.
@@ -281,26 +282,30 @@ public:
 	{
 		if (!right.isEmpty())
 		{
-			TElem *rightHead = right.getHead(); // получение головы списка из которого копируем
+			// правый список это тот, из которого нужно присвоить значения
+			TElem *rightHead = right.getHead(); // получение головы списка из правого
 			TElem *rightCurrElem = rightHead; // текущий элемент из этого же списка
 
 			if (this == &right) {
 				return *this; // проверка на самоприсваивание
 			}
+
+			if (!isEmpty())// если левый список был не пустым 
+			{
+				del_all(); // Очищаем его
+			}
+
 			do
 			{
-				addToEnd(rightCurrElem->Inf);
+				addToEnd(rightCurrElem->Inf); // просто добавляем в конец левого списка элементы из правого
 				rightCurrElem = rightCurrElem->Next;
 			} while (rightCurrElem != rightHead);
+
+
 		}
 		return *this;
 	}
 
-
-	/*bool operator= (T& student_test) {
-	TElem *elemVal = student_test.head, *elem = head, *Next;
-
-	}*/
 	/*******************************************************************/
 	~List()
 	{
@@ -326,7 +331,7 @@ int main()
 	srand(time(0));
 
 	List<int> student_test;
-	int tmp = 0;
+	int tmp = 0; // Зачем оно? 
 	for (int i = 1; i <= 10; i = i + 2)
 	{
 		student_test.addToEnd(rand() % 50);
@@ -338,6 +343,20 @@ int main()
 	List<int> student_test1;
 	student_test1 = student_test;
 	student_test1.show();
+
+	cout << "Test2\n";
+	List<int> student_test2;
+	for (int i = 1; i <= 10; i = i + 2)
+	{
+		student_test2.addToEnd(rand() % 50);
+	}
+
+	student_test2.show();
+
+	cout << "Test2 = Test1\n";
+	student_test2 = student_test1;
+	student_test2.show();
+
 
 	/*
 	//add to end
@@ -390,6 +409,9 @@ int main()
 	//delete all
 	cout << "\n\n Udalit' spisok\n";
 	student_test.del_all();
+
+	// сейчас можно смело пытаться вывести список после его удаления, я подправил и теперь есть проверки на пустоту списка
+
 	*/
 	//перегруженный оператор !, определяющий существование элементов в структуре данных
 

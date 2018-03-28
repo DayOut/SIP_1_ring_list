@@ -234,16 +234,30 @@ public:
 	}*/
 
 	// Получение указателя на информационную часть текущего элемента
-	/*int GetCurInf(T *&Inf)
+	T& GetCurInf()
 	{
-	if (elem != tail)
-	{
-	Inf = &elem->Inf;
-	return SUCCESS_OPER;
-	}
-	return NOT_SUCCESS_OPER;
+		if (elem)
+		{
+			return elem->Inf;
+		}
+		return head->Inf;
 	}
 
+	TElem* getElem()
+	{
+		return head;
+	}
+	
+	/*int GetCurInf(T *&Inf)
+	{
+		if (elem != tail)
+		{
+			Inf = &elem->Inf;
+			return SUCCESS_OPER;
+		}
+		return NOT_SUCCESS_OPER;
+	}*/
+	/*
 	// Получение копии информационной части текущего элемента
 	int GetCurInf(T &Inf)
 	{
@@ -357,6 +371,8 @@ int main()
 	student_test2 = student_test1;
 	student_test2.show();
 
+	int *a = &student_test2.GetCurInf();
+	cout << "currElem " << *a;
 
 	/*
 	//add to end

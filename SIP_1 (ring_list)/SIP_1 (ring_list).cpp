@@ -324,6 +324,19 @@ public:
 		return *this;
 	}
 
+	List<T>& operator++()
+	{
+		if (elem)
+		{
+			elem = elem->Next;
+		}
+		else
+		{
+			elem = head;
+		}
+		return *this;
+	}
+
 	/*******************************************************************/
 	~List()
 	{
@@ -384,6 +397,10 @@ int main()
 	*/
 
 	int b = student_test2.getCurrCopyInf();
+	cout << "currElem " << b << endl;
+
+	++student_test2;
+	b = student_test2.getCurrCopyInf();
 	cout << "currElem " << b << endl;
 
 	/*

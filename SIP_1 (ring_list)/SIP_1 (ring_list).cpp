@@ -234,7 +234,7 @@ public:
 	}*/
 
 	// Получение указателя на информационную часть текущего элемента
-	T& GetCurrInf()
+	T& GetCurrInfPtr()
 	{
 		if (elem)
 		{
@@ -243,7 +243,7 @@ public:
 		return head->Inf;
 	}
 
-	T getCurrCopyInf() // get current elem copy inf - получение копии информационной части 
+	T getCurrInf() // get current elem copy inf - получение копии информационной части 
 	{
 		if (elem)
 		{
@@ -252,6 +252,10 @@ public:
 		return head->Inf;
 	}
 	
+	void setCurrToHead()
+	{
+		elem = head;
+	}
 	/*int GetCurInf(T *&Inf)
 	{
 		if (elem != tail)
@@ -388,7 +392,7 @@ int main()
 	student_test2 = student_test1;
 	student_test2.show();
 
-	int *a = &student_test2.GetCurrInf();
+	int *a = &student_test2.GetCurrInfPtr();
 	cout << "currElem " << *a << endl;
 	
 	/* // это проверка того что выше мы получили действительно указатель на информационную часть элемента списка
@@ -396,11 +400,15 @@ int main()
 	student_test2.show();
 	*/
 
-	int b = student_test2.getCurrCopyInf();
+	int b = student_test2.getCurrInf();
 	cout << "currElem " << b << endl;
 
 	++student_test2;
-	b = student_test2.getCurrCopyInf();
+	b = student_test2.getCurrInf();
+	cout << "currElem " << b << endl;
+
+	student_test2.setCurrToHead();
+	b = student_test2.getCurrInf();
 	cout << "currElem " << b << endl;
 
 	/*

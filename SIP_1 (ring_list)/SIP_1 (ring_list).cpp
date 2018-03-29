@@ -234,7 +234,7 @@ public:
 	}*/
 
 	// Получение указателя на информационную часть текущего элемента
-	T& GetCurInf()
+	T& GetCurrInf()
 	{
 		if (elem)
 		{
@@ -243,9 +243,13 @@ public:
 		return head->Inf;
 	}
 
-	TElem* getElem()
+	T getCurrCopyInf() // get current elem copy inf - получение копии информационной части 
 	{
-		return head;
+		if (elem)
+		{
+			return elem->Inf;
+		}
+		return head->Inf;
 	}
 	
 	/*int GetCurInf(T *&Inf)
@@ -371,8 +375,16 @@ int main()
 	student_test2 = student_test1;
 	student_test2.show();
 
-	int *a = &student_test2.GetCurInf();
-	cout << "currElem " << *a;
+	int *a = &student_test2.GetCurrInf();
+	cout << "currElem " << *a << endl;
+	
+	/* // это проверка того что выше мы получили действительно указатель на информационную часть элемента списка
+	*a = 20;
+	student_test2.show();
+	*/
+
+	int b = student_test2.getCurrCopyInf();
+	cout << "currElem " << b << endl;
 
 	/*
 	//add to end

@@ -26,6 +26,176 @@ public:
 		tail = head;
 	}
 
+	void sort()
+	{
+		//Скажу честно, это костыль, но... Ни одна программа без костылей не существует, а это самый грамотный костыль (надеюсь, что он самый грамотный), который позволяет реализовать такую сортировку
+		tail->Next = NULL; // делаем из кольцевого - односвязный список
+		mergeSort(&head); // сортируем
+		findTail(); // ищем конец, чтобы закольцевать
+	}
+
+	void findTail()
+	{
+		while (elem->Next)
+		{
+			elem = elem->Next;
+		}
+		tail = elem;
+		tail->Next = head;
+	}
+
+
+	void mergeSort(struct TElem **root)
+	{
+		struct TElem *list1, *list2;
+		struct TElem *head = *root;
+		if ((head == NULL) || (head->Next == NULL))
+		{
+			return;
+		}
+
+		findMid(head, &list1, &list2);
+
+		mergeSort(&list1);
+		mergeSort(&list2);
+
+		*root = mergeList(list1, list2);
+
+	}
+
+
+	TElem* mergeList(struct TElem *list1, struct TElem *list2)
+	{
+		struct TElem temphead = { 0, NULL }, *tail = &temphead;
+
+		while ((list1 != NULL) && (list2 != NULL))
+		{
+			struct TElem **min = (list1->Inf < list2->Inf) ? &list1 : &list2;
+			struct TElem *next = (*min)->Next;
+			tail = tail->Next = *min;
+			*min = next;
+		}
+		tail->Next = list1 ? list1 : list2;
+		return temphead.Next;
+	}
+
+
+	void findMid(struct TElem *root, struct TElem **list1, struct TElem **list2)
+	{
+		/**
+		* Возвращает указатель на элемент структуры TElem<LISTTYPE> рядом с серединой списка
+		* и после обрезаем оригинальный списко перед этим элементом
+		*/
+		struct TElem *slow, *fast;
+
+		//в случае пустого списка (или один элемент)
+		if ((root == NULL) || (root->Next == NULL))
+		{
+			*list1 = root;
+			*list2 = NULL;
+			return;
+		}
+		else
+		{
+			/*
+			два курсора, fast движется в 2 раза быстрее slow, на одну итерацию slow происходит 2 итерации fast
+			за счет этого находится середина списка (когда fast == NULL, slow будет ровно в центре списка)
+			*/
+			slow = root;
+			fast = root->Next;
+			while (fast != NULL)
+			{
+				fast = fast->Next;
+				if (fast != NULL)
+				{
+					slow = slow->Next;
+					fast = fast->Next;
+				}
+			}
+
+			*list1 = root;
+			*list2 = slow->Next;
+			slow->Next = NULL;
+		}
+	}
+
+	//это твоя сортировка, я ее не стал трогать
+	/*
+	void sort() {
+	TElem *tmp = NULL, *prev = NULL;
+	elem = head;
+	bool flag = false;
+	do
+	{
+	flag = false;
+	elem = head;
+	while (elem->Next != head)
+	{
+	if (elem->Inf > elem->Next->Inf)
+	{
+	if (elem == head)
+	{
+	tmp = elem;
+	elem = tmp->Next;
+	tmp->Next = elem->Next;
+	elem->Next = tmp;
+	head = elem;
+	tail->Next = head;
+	flag = true;
+	}
+	else
+	{
+	tmp = elem;
+	elem = tmp->Next;
+	tmp->Next = elem->Next;
+	elem->Next = tmp;
+	prev->Next = elem;
+	flag = true;
+	}
+	}
+	prev = elem;
+	elem = elem->Next;
+	}
+	} while (flag);
+	cout << "Список отсортирован." << endl;
+	}
+
+	//Сортировка слиянием
+	List *merge(List *a, List *b)
+	{
+	if (!a)
+	return b;
+	if (!b)
+	return a;
+
+	List* c = 0;
+	if (a->Inf <= b->Inf)
+	{
+	c = a;
+	c->Next = merge(a->Next, b);
+	}
+	else
+	{
+	c = b;
+	c->Next = merge(a, b->Next);
+	}
+	return c;
+	}
+
+	List *mergesort(List *head)
+	{
+	if (head == 0 || head->Next == 0) return head;
+	List *a = head, *b = head->Next;
+	while ((b != 0) && (b->Next != 0))
+	{
+	head = head->Next;
+	b = b->Next->Next;
+	}
+	b = head->Next;
+	head->Next = NULL;
+	return merge(mergesort(a), mergesort(b));
+	}
+	*/
 
 	//функция добавления элемента в конец списка
 	bool addToEnd(T value) // add_end / ...
@@ -139,7 +309,7 @@ public:
 	void del_all() {
 		if (!head) // если список отсутствует ()
 		{
-			cout << "\n Spisok pust\n";
+			cout << "\n Список пуст.\n";
 		}
 		else {
 			tail->Next = NULL;
@@ -243,7 +413,7 @@ public:
 		return head->Inf;
 	}
 
-	T getCurrInf() // get current elem copy inf - получение копии информационной части 
+	T getCurrInf() // get current elem copyInf - получение копии информационной части 
 	{
 		if (elem)
 		{
@@ -251,40 +421,21 @@ public:
 		}
 		return head->Inf;
 	}
-	
+
+	//переводит указатель на текущий элемент в начало
 	void setCurrToHead()
 	{
 		elem = head;
 	}
-	/*int GetCurInf(T *&Inf)
+
+	//переводит указатель на текущий элемент в конец
+	void setCurrToTail()
 	{
-		if (elem != tail)
-		{
-			Inf = &elem->Inf;
-			return SUCCESS_OPER;
-		}
-		return NOT_SUCCESS_OPER;
-	}*/
-	/*
-	// Получение копии информационной части текущего элемента
-	int GetCurInf(T &Inf)
-	{
-	if (elem != NULL)
-	{
-	Inf = elem->Inf;
-	return SUCCESS_OPER;
-	}
-	return NOT_SUCCESS_OPER;
+		elem = tail;
 	}
 
-	// Переход к следующему элементу
-	TElem& operator++()
-	{
-	if (elem != NULL) elem = elem->Next;
-	return *this;
-	}
-	*/
-	
+
+	//проверка существования элементов в списке
 	bool isEmpty() const
 	{
 		return head == 0;
@@ -295,14 +446,16 @@ public:
 		return (head != NULL); // если список отсутствует ()
 	}
 
+	//получить указатель на голову
 	TElem* getHead()
 	{
 		return head;
 	}
 
+	//перегруженный оператор присваивания
 	List<T>& operator=(List<T>& right)
 	{
-		if (!right.isEmpty())
+		if (!right.isEmpty()) //если есть, что копировать
 		{
 			// правый список это тот, из которого нужно присвоить значения
 			TElem *rightHead = right.getHead(); // получение головы списка из правого
@@ -312,22 +465,20 @@ public:
 				return *this; // проверка на самоприсваивание
 			}
 
-			if (!isEmpty())// если левый список был не пустым 
+			if (!isEmpty()) //если левый список был не пустым 
 			{
-				del_all(); // Очищаем его
+				del_all(); //Очищаем его
 			}
-
 			do
 			{
-				addToEnd(rightCurrElem->Inf); // просто добавляем в конец левого списка элементы из правого
+				addToEnd(rightCurrElem->Inf); //просто добавляем в конец левого списка элементы из правого
 				rightCurrElem = rightCurrElem->Next;
 			} while (rightCurrElem != rightHead);
-
-
 		}
 		return *this;
 	}
 
+	//перегруженный оператор - переход к следующему элементу
 	List<T>& operator++()
 	{
 		if (elem)
@@ -342,6 +493,7 @@ public:
 	}
 
 	/*******************************************************************/
+	/*Деструктор*/
 	~List()
 	{
 		if (head)
@@ -365,52 +517,71 @@ int main()
 	setlocale(LC_ALL, "rus");
 	srand(time(0));
 
+	unsigned int start_time, end_time, search_time;
+
 	List<int> student_test;
-	int tmp = 0; // Зачем оно? 
-	for (int i = 1; i <= 10; i = i + 2)
+	for (int i = 1; i <= 10; i = i + 1)
 	{
 		student_test.addToEnd(rand() % 50);
+		//student_test.addToEnd(i);
 	}
 	cout << " My list " << endl;
 	student_test.show();
 
-	cout << "Test1\n";
+	cout << " Sort " << endl;
+	student_test.sort();
+
+	student_test.show();
+
+
+	/*	start_time = clock(); // начальное время
+	student_test.sort();
+	student_test.show();
+	end_time = clock(); // конечное время
+	search_time = end_time - start_time; // искомое время
+	cout << "\n Время работы сортировки: " << ((float)search_time)/CLOCKS_PER_SEC << " с.\n";
+	*/
+
+
+	//student_test.show();
+
+
+	/*******************************************************/
+	/*//копирование списка
+	cout << "\n Новый список - копия старого\n";
 	List<int> student_test1;
 	student_test1 = student_test;
 	student_test1.show();
 
-	cout << "Test2\n";
-	List<int> student_test2;
-	for (int i = 1; i <= 10; i = i + 2)
-	{
-		student_test2.addToEnd(rand() % 50);
-	}
+	/************************************************************************/
+	/*Текущий элемент*/
+	/************************************************************************/
 
-	student_test2.show();
+	/*// Получение указателя на информационную часть текущего элемента
+	int *a = &student_test1.GetCurrInfPtr();
+	cout << "\n Текущий элемент " << *a << endl;
 
-	cout << "Test2 = Test1\n";
-	student_test2 = student_test1;
-	student_test2.show();
-
-	int *a = &student_test2.GetCurrInfPtr();
-	cout << "currElem " << *a << endl;
-	
-	/* // это проверка того что выше мы получили действительно указатель на информационную часть элемента списка
+	//проверка того, что выше мы получили действительно указатель на информационную часть элемента списка
 	*a = 20;
-	student_test2.show();
+	student_test1.show();*/
+	/*
+	//получение копии информационной части
+	int b = student_test1.getCurrInf();
+	cout << "\n Копия информационной части текущего элемента\n " << b << endl;
+
+	//следующий элемент
+	++student_test1;
+	b = student_test1.getCurrInf();
+	cout << "\n Переходим к следующему элементу\n " << b << endl;
+
+	//переход к голове списка
+	student_test1.setCurrToHead();
+	b = student_test1.getCurrInf();
+	cout << "\n Голова списка - текущий элемент\n " << b << endl;
 	*/
-
-	int b = student_test2.getCurrInf();
-	cout << "currElem " << b << endl;
-
-	++student_test2;
-	b = student_test2.getCurrInf();
-	cout << "currElem " << b << endl;
-
-	student_test2.setCurrToHead();
-	b = student_test2.getCurrInf();
-	cout << "currElem " << b << endl;
-
+	/************************************************************************/
+	/**/
+	/************************************************************************/
 	/*
 	//add to end
 	tmp = rand() % 100;
@@ -446,10 +617,10 @@ int main()
 	student_test.addAfterNum(value, num);
 	student_test.show();
 
-	//del elementa s inf
+	//del elementa s Inf
 	cout << "\n\n Enter your Elem->Inf for delete\n";
 	cin >> a;
-	student_test.del_inf(a);
+	student_test.del_Inf(a);
 	student_test.show();
 
 
@@ -458,19 +629,15 @@ int main()
 	cin >> a;
 	student_test.sort_elem(a);
 	student_test.show();
-	
+
 	//delete all
 	cout << "\n\n Udalit' spisok\n";
 	student_test.del_all();
 
-	// сейчас можно смело пытаться вывести список после его удаления, я подправил и теперь есть проверки на пустоту списка
+	//можно вывести список после его удаления, я подправил и теперь есть проверки на пустоту списка
 
 	*/
 	//перегруженный оператор !, определяющий существование элементов в структуре данных
-
-	//List<int> student_test3;
-	//student_test1 = student_test;
-	//student_test1.show();
 
 	/*if (!student_test) cout << "\n Список не пуст\n";
 	else cout << "\n Список пуст\n";

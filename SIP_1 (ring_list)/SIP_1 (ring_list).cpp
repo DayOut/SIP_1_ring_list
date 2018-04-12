@@ -156,6 +156,25 @@ public:
     //функция добавления элемента в конец списка
     bool addToEnd(T value) // add_end / ...
     {
+        //создаем элемент
+        TElem *tmp = new TElem; // выделяем память на новый элемент
+        tmp->Inf = value;	// записываем значение
+        tmp->Next = head;	// указатель с первого элемента на второй
+
+        if (!head) // если список отсутствует ()
+        {
+            //помещаем его в начало и закольцовываем
+            head = tmp;
+            tail = head;
+            elem = head;
+        }
+        else
+        {
+            tail->Next = tmp;
+            tail = tmp;
+        }
+
+        /* //вроде выглядит попроще чем было
         if (!head) // если список отсутствует ()
         {
             head = new TElem;	// Выделяем память под новый элемент
@@ -175,13 +194,13 @@ public:
             tmp->Next = head;	// для кольцевого списка
             elem->Next = tmp;
             tail = tmp;
-        }
+        }*/
         return true;
     }
 
 
     //Добавление в начало списка
-    void addToBegin(T value) // add_to_begin / add_begin
+    void addToBegin(T value) 
     {
 
         TElem *tmp = new TElem; // выделяем память на новый элемент

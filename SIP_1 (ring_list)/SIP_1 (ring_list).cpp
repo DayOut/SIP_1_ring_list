@@ -7,6 +7,7 @@
 #include <ctime>
 
 template <typename T > class Iterator;
+using namespace std;
 
 template <class T>
 class List
@@ -607,31 +608,6 @@ public:
             
         }
         return *this;
-
-        //-------------------------------------------------------------------------------------------
-
-        /*
-        if (!right.isEmpty()) //если есть, что копировать
-        {
-            // правый список это тот, из которого нужно присвоить значения
-            TElem *rightHead = right.getHead(); // получение головы списка из правого
-            TElem *rightCurrElem = rightHead; // текущий элемент из этого же списка
-
-            if (this == &right) {
-                return *this; // проверка на самоприсваивание
-            }
-
-            if (!isEmpty()) //если левый список был не пустым 
-            {
-                del_all(); //Очищаем его
-            }
-            do
-            {
-                addToEnd(rightCurrElem->Inf); //просто добавляем в конец левого списка элементы из правого
-                rightCurrElem = rightCurrElem->Next;
-            } while (rightCurrElem != rightHead);
-        }
-        return *this;*/
     }
 
     //перегруженный оператор - переход к следующему элементу
@@ -680,6 +656,8 @@ public:
         return true;
     }
 
+    
+
 private:
 
     //получить указатель на голову
@@ -726,12 +704,22 @@ private:
         delete tmp;
 
     }
+
+    List<T>(const List<T>& right)
+    {
+        head = NULL;
+        elem = NULL;
+        if (!right)
+        {
+            *this = right; // присваиваем с помощью перегруженного оператора присваивания
+        }
+    }
 };
 
 template <class T>
 class Iterator {
 private:
-    const List &list;
+    //const List &list;
 
     typename List<T>::TElem *iterhead, *itertail, *iterelem, *iter;
 public:
@@ -760,6 +748,16 @@ public:
             return iterelem->Inf;
         }
         return iterhead->Inf;
+    }
+
+    //get current elem copy Inf - получение копии информационной части 
+    void getCurrInf(T *val)
+    {
+        if (iterelem)
+        {
+            val = iterelem->Inf;
+        }
+        val = iterhead->Inf;
     }
 
     //get current elem copy Inf - получение копии информационной части 
@@ -830,7 +828,7 @@ public:
     //перегруженный оператор - переход к следующему элементу
     List<T>& operator++()
     {
-        if (elem)
+        if (iterelem)
         {
             iterelem = iterelem->Next;
         }
@@ -843,21 +841,26 @@ public:
 
     ~Iterator()
     {
-        if (iterhead)
-        {
-            itertail->Next = NULL;
-            do   //Пока по адресу не пусто
-            {
-                TElem *temp = iterhead; //Временная переменная для хранения адреса следующего элемента
-                iterhead = iterhead->Next;
-                delete temp; //Освобождаем адрес обозначающий начало
-            } while (iterhead != NULL);
-        }
+        
     }
 
 };
+/*
+template <class T>
+ostream& operator << (ostream &os, List<T> &List)
+{
+    T *val = NULL;
 
-using namespace std;
+    for (Iterator<T> it = List; !it; ++it)
+    {
+        it.getCurrInf(val);
+        os << *val << endl;
+    }
+
+    return os;
+}
+*/
+
 int main()
 {
     setlocale(LC_ALL, "rus");
@@ -915,6 +918,7 @@ int main()
     asd.show();
     cout << endl;
 
+    //cout << student_test;
 
     system("pause");
 

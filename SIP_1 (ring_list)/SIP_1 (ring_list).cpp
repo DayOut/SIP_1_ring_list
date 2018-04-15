@@ -499,7 +499,6 @@ public:
         elem = head;
     }
 
-    
 
     T getCurrInf() // get current elem copy Inf - получение копии информационной части 
     {
@@ -584,46 +583,28 @@ public:
     ~List()
     {
         del_all();
+        head = elem = tail = NULL; // обнуляем
     }
 
     //пузырек
-    void sort_bubble() {
-        TElem *tmp = NULL, *prev = NULL;
-        elem = head;
+    bool sort_bubble() {
+        TElem *tmp = head;
+
         bool flag = false;
         do
         {
             flag = false;
-            elem = head;
-            while (elem->Next != head)
+            tmp = head;
+            while (tmp->Next != head)
             {
-                if (elem->Inf > elem->Next->Inf)
-                {
-                    if (elem == head)
-                    {
-                        tmp = elem;
-                        elem = tmp->Next;
-                        tmp->Next = elem->Next;
-                        elem->Next = tmp;
-                        head = elem;
-                        tail->Next = head;
-                        flag = true;
-                    }
-                    else
-                    {
-                        tmp = elem;
-                        elem = tmp->Next;
-                        tmp->Next = elem->Next;
-                        elem->Next = tmp;
-                        prev->Next = elem;
-                        flag = true;
-                    }
-                }
-                prev = elem;
-                elem = elem->Next;
+                if (tmp->Inf > tmp->Next->Inf)
+                    return false;
+
+                tmp = tmp->Next;
             }
         } while (flag);
-        cout << "Список отсортирован." << endl;
+
+        return true;
     }
 
 private:
@@ -900,10 +881,6 @@ int main()
     //************************************************************************
     //Текущий элемент
     //************************************************************************
-
-    // Получение указателя на информационную часть текущего 
-    int *a = &student_test.GetCurrInfPtr();
-    cout << "\n Текущий элемент " << *a << endl;
 
     /*//проверка того, что выше мы получили действительно указатель на информационную часть элемента списка
     *a = 20;

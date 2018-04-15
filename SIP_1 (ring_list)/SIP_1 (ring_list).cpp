@@ -56,7 +56,7 @@ public:
             return;
 
         tail->Next = NULL; // делаем из кольцевого - односвязный список
-        mergeSort(&head); // сортируем
+        mergeSort(head); // сортируем
         findTail(); // ищем конец, чтобы закольцевать
         show();
         //cout << "\n Количество рекурсивных вызовов: " << k << "\n";
@@ -82,14 +82,13 @@ public:
     // тут было mergeSort(struct TElem **root), за что он ко мне приколупался, мол зачем две звездочки
     // так что теперь берем просто элемент по адресу
     //-------------------------------------------------------------------------------------------
-    void mergeSort(TElem **root)
+    void mergeSort(TElem *root)
     {
         // вылезла прикольная штука, иногда что-то в программе зацикливается, но я не могу пока понять 
         // алгоритм, который приводит к этой баге
 
-        k++;
         TElem *list1, *list2;
-        TElem *head = *root;
+        TElem *head = root;
         if ((head == NULL) || (head->Next == NULL))
         {
             return;
@@ -97,10 +96,10 @@ public:
 
         findMid(head, &list1, &list2);
 
-        mergeSort(&list1);
-        mergeSort(&list2);
+        mergeSort(list1);
+        mergeSort(list2);
 
-        *root = mergeList(list1, list2);
+        root = mergeList(list1, list2);
 
     }
 
@@ -157,6 +156,7 @@ public:
             slow->Next = NULL;
         }
     }
+
 
     //функция добавления элемента в конец списка
     bool addToEnd(T value) // add_end / ...
@@ -502,11 +502,7 @@ public:
 
     T getCurrInf() // get current elem copy Inf - получение копии информационной части 
     {
-        if (elem)
-        {
-            return elem->Inf;
-        }
-        return head->Inf;
+        return elem ? elem->Inf : head->Inf;
     }
 
     //переводит указатель на текущий элемент в начало
@@ -586,6 +582,29 @@ public:
             
             if (rightCurrent)
                 rightCurrent = (rightCurrent->Next == rightHead) ? NULL : rightCurrent->Next;
+
+            /*
+            
+            if(prevTmp != tmp)
+                if(tmp)
+                    prevTmp = tmp;
+                else
+                    prevTmp = NULL;
+
+
+            if (tmp)
+                if(tmp->Next == head)
+                    tmp = NULL;
+                else
+                    tmp = tmp->Next;
+
+            if (rightCurrent)
+                if(rightCurrent->Next == rightHead)
+                    rightCurrent = NULL;
+                else
+                    rightCurrent = rightCurrent->Next;*/
+            
+            
         }
         return *this;
 
@@ -672,11 +691,7 @@ private:
     // Получение указателя на информационную часть текущего элемента
     T& GetCurrInfPtr()
     {
-        if (elem)
-        {
-            return elem->Inf;
-        }
-        return head->Inf;
+        return elem ? elem->Inf : head->Inf;
     }
 
     //private функция для удаления текущего элемента
@@ -853,7 +868,7 @@ int main()
     //TBList<int> student_test1;
 
     //проверка сортировки
-    for (int i = 1; i <= 7; i = i + 1)
+    for (int i = 1; i <= 10; i = i + 1)
     {
         tmp = rand() % 100;
         student_test.addToBegin(tmp);

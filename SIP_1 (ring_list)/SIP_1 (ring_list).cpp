@@ -257,7 +257,7 @@ public:
         if (!elem)
         {
             if (!head)
-                return;
+                return false;
 
             elem = head;
         }
@@ -298,7 +298,7 @@ public:
             elem = head;
         }
         //-------------------------------------------------------------------------------------------
-        else if(a == tail->inf)
+        else if(a == tail->Inf)
         {
             //придется обходить весь список, чтобы найти элемент перед хвостом =(
             tmp = head;
@@ -538,6 +538,60 @@ public:
     //перегруженный оператор присваивания
     List<T>& operator=(List<T>& right)
     {
+        //-------------------------------------------------------------------------------------------
+        // Логика: 
+        //      Присвоение идет поверх существующего списка, если в этом списке уже есть элементы - будем перезаписывать 
+        //      текущее информационное поле, если в нашем списке элементов больше - удаляем лишние уже после перезаписанной 
+        //      первой части списка (удаляем только лишее, то чего в этом списке быть не должно). Если же в этом списке элементов меньше
+        //      добавляем новые, как делал старый алгоритм
+        //
+        //      Итого, у нас три варианта развития событий (сравнение двух списков)
+        //          1) есть_элемент     есть_элемент - в данном случае перезаписываем инф часть
+        //          2) есть_элемент     нет_элемента - удаляем "лишний" элемент в данном списке
+        //          3) нет_элемента     есть_элемент - добавляем в конец этого списка 
+        //      
+
+        if (this == &right) //проверка на самоприсваивание 
+        {
+            return *this;
+        }
+
+        TElem *rightHead = right.getHead();
+        TElem *rightCurrent = rightHead;
+
+        TElem *tmp = head, *prevTmp = NULL; // курсоры в левом списке
+
+        while (tmp || rightCurrent)
+        {
+            if (rightCurrent && tmp)
+            {
+                tmp->Inf = rightCurrent->Inf;
+            }
+            else if (tmp && !rightCurrent)
+            {
+                elem = tmp;
+                tmp = prevTmp;
+                deleteCurrentElement(prevTmp);
+            }
+            else if (!tmp && rightCurrent)
+            {
+                addToEnd(rightCurrent->Inf);
+            }
+
+            if(prevTmp != tmp)
+                prevTmp = (tmp) ? tmp : NULL;
+
+            if (tmp)
+                tmp = (tmp->Next == head) ? NULL : tmp->Next;
+            
+            if (rightCurrent)
+                rightCurrent = (rightCurrent->Next == rightHead) ? NULL : rightCurrent->Next;
+        }
+        return *this;
+
+        //-------------------------------------------------------------------------------------------
+
+        /*
         if (!right.isEmpty()) //если есть, что копировать
         {
             // правый список это тот, из которого нужно присвоить значения
@@ -558,7 +612,7 @@ public:
                 rightCurrElem = rightCurrElem->Next;
             } while (rightCurrElem != rightHead);
         }
-        return *this;
+        return *this;*/
     }
 
     //перегруженный оператор - переход к следующему элементу
@@ -623,6 +677,39 @@ private:
             return elem->Inf;
         }
         return head->Inf;
+    }
+
+    //private функция для удаления текущего элемента
+    void deleteCurrentElement(TElem *prevTmp)
+    {
+        TElem *tmp;
+        if (!head)
+            return;
+        else if (elem == head)
+        {
+            tmp = head;
+
+            if (head->Next == head)
+            {
+                head = NULL;
+            }
+            else
+            {
+                elem = head->Next;
+                head = elem;
+                tail->Next = head;
+            }
+        }
+        else
+        {
+            tmp = elem;
+            elem = elem->Next;
+            prevTmp->Next = elem;
+
+        }
+
+        delete tmp;
+
     }
 };
 
@@ -773,6 +860,7 @@ int main()
         //student_test1.AddBeforeHead(tmp);
         //student_test.addToEnd(i);
     }
+    student_test.addToBegin(27);
     cout << " My list " << endl;
     cout << " Список из 1000000 элементов. Сортировка.\n" << endl;
     //student_test.show();
@@ -788,6 +876,31 @@ int main()
     student_test.setCurrToHead();
     student_test.sort_now_elem();
     student_test.show();
+
+    List<int> asd;
+    asd = student_test;
+    asd.show();
+    cout << endl;
+
+    student_test.addToBegin(24);
+    asd = student_test;
+    cout << "student_test: \n";
+    student_test.show();
+    cout << "asd: \n";
+    asd.show();
+    cout << endl;
+
+    student_test.setCurrToHead();
+    ++student_test;
+    student_test.del_Inf(27);
+    asd = student_test;
+    cout << "student_test: \n";
+    student_test.show();
+    cout << "asd: \n";
+    asd.show();
+    cout << endl;
+
+
     system("pause");
 
 

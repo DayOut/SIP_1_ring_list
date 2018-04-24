@@ -30,17 +30,12 @@ public:
     List() 
     { 
         head = NULL; 
-        //-------------------------------------------------------------------------------------------
         tail = NULL; // надо обнулять все переменные
         elem = NULL; // в том числе и хвост и текущий элемент
-        //-------------------------------------------------------------------------------------------
     }
 
     void sort()
     {
-        //-------------------------------------------------------------------------------------------
-        //тут нужна проверка на пустоту списка
-        //-------------------------------------------------------------------------------------------
         if (!head) // если списка нет - то и сортировать нечего
             return;
 
@@ -48,18 +43,19 @@ public:
         mergeSort(head); // сортируем
         findTail(); // ищем конец, чтобы закольцевать
         show();
-        //cout << "\n Количество рекурсивных вызовов: " << k << "\n";
         k = 0;
     }
 
     void findTail()
     {
+        tail = NULL;
+
         if (!head)
         {
             return;
         }
         TElem *tmp = head;
-        while (tmp->Next)
+        while (tmp->Next != head && tmp->Next)
         {
             tmp = tmp->Next;
         }
@@ -67,10 +63,6 @@ public:
         tail->Next = head;
     }
 
-    //-------------------------------------------------------------------------------------------
-    // тут было mergeSort(struct TElem **root), за что он ко мне приколупался, мол зачем две звездочки
-    // так что теперь берем просто элемент по адресу
-    //-------------------------------------------------------------------------------------------
     void mergeSort(TElem *root)
     {
         // вылезла прикольная штука, иногда что-то в программе зацикливается, но я не могу пока понять 
@@ -193,31 +185,6 @@ public:
         //-------------------------------------------------------------------------------------------
     }
 
-    /* 
-    //этот метод удаляем 
-    //функция добавления элемента после заданного
-    void addAfterNum(T value, T num) // add_end / ...
-    {
-        elem = head;
-        int k = 1;
-        while (elem != tail && k != num)
-        {
-            elem = elem->Next; // доходим до конца списка
-            k = k + 1;
-        }
-        if (num > k) {
-            cout << " Элемент не может быть вставлен.\n";
-            return;
-        }
-        TElem *tmp = new TElem; // выделяем память на новый элемент
-        tmp->Inf = value;	// записываем значение 
-        tmp->Next = elem->Next;
-        elem->Next = tmp;
-    }*/
-
-
-    //-------------------------------------------------------------------------------------------
-    //изменил тип функции на bool так если найден элемент получаем true или в противном случае - false
     //-------------------------------------------------------------------------------------------
     //Поиск элемента
     bool found(T a) {
@@ -239,13 +206,6 @@ public:
         return true;
     }
 
-
-    //-------------------------------------------------------------------------------------------
-    // возможно не самое элегантное решение, но требование было использовать delete один раз
-    // вот, изменил, теперь delete только один раз в этой функции, независимо от варианта удаления 
-    // ну и убрал все cout-ы
-    // И дописал обработку случая удаления хвоста 
-    //-------------------------------------------------------------------------------------------
     //удаление элемента с указанной инф. частью
     void del_Inf(T a) {
 
@@ -341,25 +301,6 @@ public:
             elem->Next = tmp;
         }
     }
-
-
-    //-------------------------------------------------------------------------------------------
-    //Эта функция не нужна (ее нет в ТЗ)
-    //-------------------------------------------------------------------------------------------
-    //изменение информационной части элемента
-    /*
-    void change_Inf() {
-        cout << "\nЭлемент, который необходимо изменить:\n";
-        int a, b;
-        cin >> a;
-        cout << "\nНовое значение элемента:\n";
-        cin >> b;
-        for (int i = 1; i < a; i++) {
-            elem = elem->Next;
-        }
-        elem->Inf = b;
-    }*/
-
 
     //упорядочение текущего элемента
     void sort_now_elem() 
@@ -468,7 +409,9 @@ public:
 
     T getCurrInf() // get current elem copy Inf - получение копии информационной части 
     {
-        return elem ? elem->Inf : head->Inf;
+        if (elem && head)
+            return elem ? elem->Inf : head->Inf;
+        return 0;
     }
 
     //переводит указатель на текущий элемент в начало
@@ -523,55 +466,42 @@ public:
 
         TElem *tmp = head, *prevTmp = NULL; // курсоры в левом списке
 
-        while (tmp!=NULL || rightCurrent!=NULL)
+        if (rightHead)
         {
-            if (rightCurrent && tmp)
+            while (rightCurrent && tmp) // пока оба списка есть копируем из правого в левый
             {
                 tmp->Inf = rightCurrent->Inf;
+                prevTmp = (tmp) ? tmp : NULL;
+                tmp = (tmp->Next == head) ? NULL : tmp->Next;
+                rightCurrent = (rightCurrent->Next == rightHead) ? NULL : rightCurrent->Next;
             }
-            else if (tmp && !rightCurrent)
+
+            while (tmp && !rightCurrent) // если есть только левый 
             {
                 elem = tmp;
-                tmp = prevTmp;
+                tmp = prevTmp ? prevTmp : tail;
                 deleteCurrentElement(prevTmp);
+                if (tmp)
+                    tmp = (tmp->Next == head) ? NULL : tmp->Next;
+                else
+                {
+                    tmp = NULL;
+                }
             }
-            else if (!tmp && rightCurrent)
+
+            while (!tmp && rightCurrent) // если есть только правый
             {
                 addToEnd(rightCurrent->Inf);
-            }
-
-            if(prevTmp != tmp)
-                prevTmp = (tmp) ? tmp : NULL;
-
-            if (tmp)
-                tmp = (tmp->Next == head) ? NULL : tmp->Next;
-            
-            if (rightCurrent)
                 rightCurrent = (rightCurrent->Next == rightHead) ? NULL : rightCurrent->Next;
-
-            /*
-            
-            if(prevTmp != tmp)
-                if(tmp)
-                    prevTmp = tmp;
-                else
-                    prevTmp = NULL;
-
-
-            if (tmp)
-                if(tmp->Next == head)
-                    tmp = NULL;
-                else
-                    tmp = tmp->Next;
-
-            if (rightCurrent)
-                if(rightCurrent->Next == rightHead)
-                    rightCurrent = NULL;
-                else
-                    rightCurrent = rightCurrent->Next;*/
-            
-            
+            }
         }
+        else
+        {
+            del_all(); // если правый список полностью пустой - удаляем этот
+        }
+
+        findTail();
+
         return *this;
     }
 
@@ -590,9 +520,6 @@ public:
     }
 
     /*******************************************************************/
-    //-------------------------------------------------------------------------------------------
-    // изменил согласно требованиям, теперь деструктор вызывает функцию удаления всех элементов
-    //-------------------------------------------------------------------------------------------
     /*Деструктор*/
     ~List()
     {
@@ -603,25 +530,26 @@ public:
     //пузырек
     bool sort_bubble() {
         TElem *tmp = head;
-
-        bool flag = false;
-        do
+        if(head)
         {
-            flag = false;
-            tmp = head;
-            while (tmp->Next != head)
+            bool flag = false;
+            do
             {
-                if (tmp->Inf > tmp->Next->Inf)
-                    return false;
+                flag = false;
+                tmp = head;
+                while (tmp->Next != head)
+                {
+                    if (tmp->Inf > tmp->Next->Inf)
+                        return false;
 
-                tmp = tmp->Next;
-            }
-        } while (flag);
+                    tmp = tmp->Next;
+                }
+            } while (flag);
 
-        return true;
+            return true;
+        }
+        return false;
     }
-
-    
 
 private:
 
@@ -833,8 +761,44 @@ int main()
     int tmp;
     unsigned int start_time, end_time, search_time;
     List<int> student_test, student_testcopy;
-    //TBList<int> student_test1;
 
+    //проверка сортировки
+    for (int i = 1; i <= 10; i = i + 1)
+    {
+        tmp = rand() % 100;
+        student_test.addToBegin(tmp);
+    }
+    student_test.show();
+    cout << endl;
+    student_testcopy = student_test;
+    student_testcopy.show();
+
+    student_test.addToBegin(48);
+    student_test.addToBegin(46);
+    student_test.show();
+    cout << endl;
+    student_testcopy = student_test;
+    student_testcopy.show();
+
+    cout << "Удалили 46 из student test\n";
+    student_test.del_Inf(46);
+    student_test.show();
+    cout << endl;
+    student_testcopy = student_test;
+    student_testcopy.show();
+    cout << "---------------------------------------\n";
+    
+    cout << "Удалили список student test\n";
+    student_test.del_all();
+    student_test.show();
+    cout << endl;
+    student_testcopy = student_test;
+    student_testcopy.show();
+    cout << "---------------------------------------\n";
+
+
+    //TBList<int> student_test1;
+    /*
     //проверка сортировки
     for (int i = 1; i <= 10; i = i + 1)
     {
@@ -887,7 +851,7 @@ int main()
 
     system("pause");
 
-
+    */
     /*
     start_time = clock(); // начальное время
     //student_test1.SortListBiDir();
@@ -898,7 +862,6 @@ int main()
     //***********************************************************************
     //
     //************************************************************************
-
     /*
     //проверка остальных методов класса
     student_test.del_all();
@@ -961,7 +924,8 @@ int main()
     student_test.show();
     cout << "\n\n Упорядочивание текущего элемента:\n";
     student_test.sort_now_elem();
-    student_test.show();*/
+    student_test.show();
+    
 
     //*******************************************************
     //перегруженный оператор !, определяющий существование элементов в структуре данных
@@ -979,7 +943,7 @@ int main()
     //Текущий элемент
     //************************************************************************
 
-    /*//проверка того, что выше мы получили действительно указатель на информационную часть элемента списка
+    /* //проверка того, что выше мы получили действительно указатель на информационную часть элемента списка
     *a = 20;
     student_test.show();*/
     
@@ -1004,6 +968,8 @@ int main()
     student_testcopy.sort_bubble();
     student_test.show();
     student_testcopy.show();
+
+    
 
     cout << endl << endl;
 

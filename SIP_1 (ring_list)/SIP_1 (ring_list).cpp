@@ -287,29 +287,35 @@ public:
                     tmp = tmp->Next;
                 }
 
-                if (elem == tail) //или если текущий хвост
+                if (tmp->Next == tail) //или если текущий хвост
                 {
-                    if (tmp->Inf > elem->Inf) {
-                        tail = tmp;
-                        tail = elem->Next;
-                    }
+                    tail = tmp;
+                    tail->Next = elem->Next;
                 }
                 else
                 {
-                    if (tmp->Inf < elem->Inf && elem->Inf < elem->Next->Inf) {
-                        tmp->Next = elem->Next; //вырезаем элемент
-                        tmp = elem;
-                        elem = head;
-                    }
+                    tmp->Next = elem->Next; //вырезаем элемент
+                    //tmp = elem;
+                    //elem = head;
                 }
             }
+            show();
             //если элемент больше следующего - ищем элементу место после следующего
-            tmp = (elem->Inf > elem->Next->Inf) ? elem->Next : head;
+            //tmp = (elem->Inf > elem->Next->Inf) ? elem->Next : head;
+            tmp = head;
+
+            if (elem->Inf <= head->Inf)
+            {
+                elem->Next = head;
+                tail->Next = elem;
+                head = elem;
+            }
 
             while (elem->Inf > tmp->Inf)
             {
                 if (elem->Inf <= tmp->Next->Inf) //нашли нужное место
                 {
+                    
                     elem->Next = tmp->Next; //вставляем
                     tmp->Next = elem;
                     break;
@@ -331,12 +337,12 @@ public:
     {
         if (head) // если список отсутствует ()
         {
-            elem = head;
+            TElem *tmp = head;
             do
             {
-                cout << elem->Inf << "   ";
-                elem = elem->Next; //доходим до конца списка
-            } while (elem != head); //в случае кольцевого списка проверяем есть ли данный элемент последним
+                cout << tmp->Inf << "   ";
+                tmp = tmp->Next; //доходим до конца списка
+            } while (tmp != head); //в случае кольцевого списка проверяем есть ли данный элемент последним
             cout << endl;
         }
     }
@@ -481,13 +487,15 @@ public:
         return false;
     }
 
-private:
-
-    // Получение указателя на информационную часть текущего элемента
     T& GetCurrInfPtr()
     {
         return elem ? elem->Inf : head->Inf;
     }
+
+private:
+
+    // Получение указателя на информационную часть текущего элемента
+    
 
     //private функция для удаления текущего элемента
     void deleteCurrentElement(TElem *prevTmp)
@@ -622,6 +630,41 @@ int main()
     }
     cout << "\n Список:" << endl;
     student_test.show();
+
+    // delete before commit------------------------------------
+    student_test.del_all();
+    student_test.addToEnd(0);
+    student_test.addToEnd(1);
+    student_test.addToEnd(9);
+    student_test.addToEnd(11);
+    student_test.addToEnd(12);
+    student_test.addToEnd(14);
+    student_test.addToEnd(18);
+    student_test.addToEnd(19);
+    student_test.addToEnd(22);
+    student_test.addToEnd(23);
+
+
+    student_test.sort();
+    student_test.show();
+    student_test.setCurrToHead();
+    int *val = NULL;
+    for (int i = 0; i < 10; i++)
+    {
+        val = &student_test.GetCurrInfPtr();
+        cout << "Текущий элемент: " << student_test.getCurrInf();
+
+        std::cin >> *val;
+        student_test.sort_now_elem();
+
+        student_test.show();
+        std::cout << std::endl;
+    }
+
+
+
+    //---------------------------------------------------------
+
     //student_testcopy.show();
     List<int> st(student_test); //исп. конструктор копирования
 

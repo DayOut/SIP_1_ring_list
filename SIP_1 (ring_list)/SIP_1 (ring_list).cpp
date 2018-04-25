@@ -274,10 +274,8 @@ public:
             TElem *tmp = head;
             if (elem == head) //если текущий голова
             {
-                if (elem->Inf > head->Next->Inf) {
-                    head = head->Next; //вырезаем элемент
-                    tail->Next = head;
-                }
+                head = head->Next; //вырезаем элемент
+                tail->Next = head;
             }
             else
             {
@@ -287,21 +285,17 @@ public:
                     tmp = tmp->Next;
                 }
 
-                if (tmp->Next == tail) //или если текущий хвост
+                if (tmp->Next != tail)
+                {
+                    tmp->Next = elem->Next;
+                }
+                else
                 {
                     tail = tmp;
                     tail->Next = elem->Next;
                 }
-                else
-                {
-                    tmp->Next = elem->Next; //вырезаем элемент
-                    //tmp = elem;
-                    //elem = head;
-                }
             }
-            show();
-            //если элемент больше следующего - ищем элементу место после следующего
-            //tmp = (elem->Inf > elem->Next->Inf) ? elem->Next : head;
+
             tmp = head;
 
             if (elem->Inf <= head->Inf)
@@ -315,7 +309,6 @@ public:
             {
                 if (elem->Inf <= tmp->Next->Inf) //нашли нужное место
                 {
-                    
                     elem->Next = tmp->Next; //вставляем
                     tmp->Next = elem;
                     break;

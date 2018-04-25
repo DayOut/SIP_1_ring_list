@@ -428,7 +428,7 @@ public:
     }
 
     //конструктор копирования
-    List<T>(List<T>& right)
+    List<T>(const List<T>& right)
     {
         head = NULL;
         elem = NULL;

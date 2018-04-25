@@ -46,16 +46,17 @@ public:
 
     void findTail()
     {
-        if (head) {
+        tail = NULL;
+        if (head)
+        {
             TElem *tmp = head;
-            while (tmp->Next)
+            while (tmp->Next != head && tmp->Next)
             {
                 tmp = tmp->Next;
             }
             tail = tmp;
             tail->Next = head;
         }
-
     }
 
     void mergeSort(TElem **root)
@@ -91,25 +92,6 @@ public:
         tail->Next = list1 ? list1 : list2; //если один из подсписков закончился
         return temphead.Next;
     }
-
-
-    //static TElem *bisectList(TElem *head)
-    //{
-    //	/* The fast pointer moves twice as fast as the slow pointer. */
-    //	/* The prev pointer points to the node preceding the slow pointer. */
-    //	 TElem *fast = head, *slow = head, *prev = NULL;
-    //	while (fast != NULL && fast->Next != NULL)
-    //	{
-    //		fast = fast->Next->Next;
-    //		prev = slow;
-    //		slow = slow->Next;
-    //	}
-    //	if (prev != NULL)
-    //	{
-    //		prev->Next = NULL;
-    //	}
-    //	return slow;
-    //}
 
     void findMid(struct TElem *root, struct TElem **list1, struct TElem **list2)
     {
@@ -169,7 +151,6 @@ public:
         return true;
     }
 
-
     //Добавление в начало списка
     void addToBegin(T value) // add_to_begin / add_begin
     {
@@ -187,7 +168,6 @@ public:
             tail->Next = head;	// меняем указатель на начало списка
         }
     }
-
 
     //Поиск элемента
     bool found(T a) {
@@ -357,6 +337,7 @@ public:
                 cout << elem->Inf << "   ";
                 elem = elem->Next; //доходим до конца списка
             } while (elem != head); //в случае кольцевого списка проверяем есть ли данный элемент последним
+            cout << endl;
         }
     }
     /*******************************************************************/
@@ -396,14 +377,14 @@ public:
     }
 
     //перегруженный оператор присваивания
-    List<T>& operator=(List<T>& right)
+    List<T>& operator=(const List<T>& right)
     {
         if (this == &right) //проверка на самоприсваивание 
         {
             return *this;
         }
         // правый список это тот, из которого нужно присвоить значения
-        TElem *rightHead = right.getHead(); //получение головы списка из правого
+        TElem *rightHead = right.head; //получение головы списка из правого
         TElem *rightCurrent = rightHead; //текущий элемент из этого же списка
 
         TElem *tmp = head, *prevTmp = NULL; //курсоры в левом списке
@@ -447,13 +428,14 @@ public:
     }
 
     //конструктор копирования
-    List<T>(const List<T>& right)
+    List<T>(List<T>& right)
     {
         head = NULL;
         elem = NULL;
-        if (right.head == NULL)
+        
+        if (right.head != NULL)
         {
-            *this = right; // присваиваем с помощью перегруженного оператора присваивания
+            *this = right; 
         }
     }
 
@@ -500,11 +482,6 @@ public:
     }
 
 private:
-    //получить указатель на голову
-    TElem* getHead()
-    {
-        return head;
-    }
 
     // Получение указателя на информационную часть текущего элемента
     T& GetCurrInfPtr()
@@ -637,7 +614,7 @@ int main()
     List<int> student_test, student_testcopy;
     TBList<int> student_test1;
     //заполним список
-    for (int i = 1; i <= 10; i = i + 2)
+    for (int i = 1; i <= 10; i = i + 1)
     {
         tmp = rand() % 25;
         student_test.addToBegin(tmp);
@@ -654,12 +631,13 @@ int main()
     case 1:
         //проверка сортировки
         student_test.del_all();
-        for (int i = 1; i <= 1000000; i = i + 1)
+        for (int i = 1; i <= 10; i = i + 1)
         {
-            tmp = rand() % 1000000;
-            student_test.addToBegin(tmp);
-            student_test1.AddBeforeHead(tmp);
+            tmp = rand() % 100;
+            student_test.addToBegin(tmp); // 
+            student_test1.AddBeforeHead(tmp); 
         }
+
         cout << " Список из 1000000 элементов. Сортировка." << endl;
 
         start_time = clock(); // начальное время

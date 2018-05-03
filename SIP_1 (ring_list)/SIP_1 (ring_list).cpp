@@ -389,31 +389,31 @@ public:
         TElem *tmp = head, *prevTmp = NULL; //курсоры в левом списке
         if (rightHead)
         {
-            while (rightCurrent && tmp) // пока оба списка есть копируем из правого в левый
+            do
             {
                 tmp->Inf = rightCurrent->Inf;
-                prevTmp = (tmp) ? tmp : NULL;
-                tmp = (tmp->Next == head) ? NULL : tmp->Next;
-                rightCurrent = (rightCurrent->Next == rightHead) ? NULL : rightCurrent->Next;
-            }
+                tail = tmp;
+                tmp = tmp->Next;
+                rightCurrent = rightCurrent->Next;
+            } while (rightCurrent != rightHead && tmp != head); // пока оба списка есть копируем из правого в левый
 
-            while (tmp && !rightCurrent) //если есть только левый 
+            tail->Next = head;
+
+            if (tmp != head)
             {
-                elem = tmp;
-                tmp = prevTmp ? prevTmp : tail;
-                deleteCurrentElement(prevTmp);
-                if (tmp)
-                    tmp = (tmp->Next == head) ? NULL : tmp->Next;
-                else
+                TElem *del;
+                while (tmp != head)
                 {
-                    tmp = NULL;
+                    del = tmp;
+                    tmp = tmp->Next;
+                    delete del;
                 }
             }
 
-            while (!tmp && rightCurrent) //если есть только правый
+            while (rightCurrent != rightHead) //если есть только правый
             {
                 addToEnd(rightCurrent->Inf);
-                rightCurrent = (rightCurrent->Next == rightHead) ? NULL : rightCurrent->Next;
+                rightCurrent = rightCurrent->Next;
             }
         }
         else
@@ -421,7 +421,7 @@ public:
             del_all(); //если правый список полностью пустой - удаляем этот
         }
 
-        findTail();
+        //findTail();
 
         return *this;
     }
@@ -630,12 +630,23 @@ int main()
     student_test.addToEnd(1);
     student_test.addToEnd(9);
     student_test.addToEnd(11);
-    student_test.addToEnd(12);
-    student_test.addToEnd(14);
-    student_test.addToEnd(18);
-    student_test.addToEnd(19);
-    student_test.addToEnd(22);
-    student_test.addToEnd(23);
+    student_testcopy = student_test;
+    cout << "\nstudent_testcopy.show(): \n";
+    student_testcopy.show();
+    cout << "\nstudent_test.show(): \n";
+    student_test.show();
+
+
+    student_test.del_all();
+    student_test.addToEnd(1);
+    student_test.addToEnd(9);
+    student_test.addToEnd(11);
+    student_testcopy = student_test;
+
+    cout << "\nstudent_testcopy.show(): \n";
+    student_testcopy.show();
+    cout << "\nstudent_test.show(): \n";
+    student_test.show();
 
 
     student_test.sort();

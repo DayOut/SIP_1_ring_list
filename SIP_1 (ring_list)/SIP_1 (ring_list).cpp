@@ -20,42 +20,32 @@ private:
         T Inf;
         TElem *Next;
     };
-    TElem *head, *tail, *elem; //указатель на голову списка, elem - указатель на текущий элемент
+    TElem *tail, *elem; //указатель на хвост списка, elem - указатель на текущий элемент
     int k = 0;
 
 public:
 
     List() {
-        head = NULL;
-        tail = NULL;
-        elem = NULL;
+        elem = tail = NULL;
     }
 
     //сортировка слиянием
     void sort()
     {
-        if (head) {
+        if (tail) {
+            TElem *head = tail->Next;
             tail->Next = NULL; // делаем из кольцевого - односвязный список
             mergeSort(head); // сортируем
-            findTail(); // ищем конец, чтобы закольцевать
-            cout << "\n Количество рекурсивных вызовов: " << k << "\n";
-            k = 0;
-        }
-
-    }
-
-    void findTail()
-    {
-        tail = NULL;
-        if (head)
-        {
+                             // ищем конец, чтобы закольцевать
             TElem *tmp = head;
-            while (tmp->Next != head && tmp->Next)
+            do
             {
                 tmp = tmp->Next;
-            }
+            } while (tmp->Next);
             tail = tmp;
-            tail->Next = head;
+            tail->Next = head; // закольцевали список
+            cout << "\n Количество рекурсивных вызовов: " << k << "\n";
+            k = 0;
         }
     }
 
@@ -81,7 +71,7 @@ public:
     TElem* mergeList(TElem *list1, TElem *list2)
     {
         TElem temphead = { 0, NULL }, *tail = &temphead;
-
+        k++;
         while ((list1 != NULL) && (list2 != NULL)) //пока в подсписке еще есть элементы
         {
             TElem **min = (list1->Inf < list2->Inf) ? &list1 : &list2; //выбираем меньший
@@ -93,13 +83,13 @@ public:
         return temphead.Next;
     }
 
-    void findMid(struct TElem *root, struct TElem *&list1, struct TElem *&list2)
+    void findMid(TElem *root, TElem *&list1, TElem *&list2)
     {
         /**
         Возвращает указатель на элемент структуры TElem<T> рядом с серединой списка
         и после обрезаем оригинальный список перед этим элементом
         */
-        struct TElem *slow, *fast;
+        TElem *slow, *fast;
 
         //в случае пустого списка (или один элемент)
         if ((root == NULL) || (root->Next == NULL))
@@ -132,237 +122,150 @@ public:
     }
 
     //функция добавления элемента в конец списка
-    bool addToEnd(T value) // add_end / ...
+    void addToEnd(T value)
     {
         TElem *tmp = new TElem; // выделяем память на новый элемент
         tmp->Inf = value;	// записываем значение
-        tmp->Next = head;	// указатель с первого элемента на второй
-        if (!head) // если список отсутствует ()
-        {
-            head = tmp;
-            tail = head;
-            elem = head;
-        }
-        else
+        tmp->Next = tail ? tail->Next : tmp;
+        if (tail)
         {
             tail->Next = tmp;
-            tail = tmp;
         }
-        return true;
+        tail = tmp;
+
     }
 
     //Добавление в начало списка
-    void addToBegin(T value) // add_to_begin / add_begin
+    void addToBegin(T value)
     {
         TElem *tmp = new TElem; // выделяем память на новый элемент
         tmp->Inf = value;	// записываем значение
-        tmp->Next = head;	// указатель с первого элемента на второй
-        head = tmp;			// меняем голову на новый элемент
-        if (!head->Next) // если список отсутствует ()
-        {
-            head->Next = head;	// указатель на последний элемент
-            tail = head;
-        }
+        if (!tail)
+            tail = tmp;
         else
-        {
-            tail->Next = head;	// меняем указатель на начало списка
-        }
+            tmp->Next = tail->Next;
+        tail->Next = tmp; //указатель с первого элемента на второй
     }
 
     //Поиск элемента
     bool found(T a) {
-        if (!elem)
+        if (tail)
         {
-            if (!head)
-                return false;
-
-            elem = head;
+            TElem *element = tail;
+            do
+            {
+                if (element->Inf == a) {
+                    elem = element;
+                    return true;
+                }
+                element = element->Next;
+            } while (element != tail);
         }
-
-        while (elem->Inf != a)
-        {
-            if (elem == tail && elem->Inf != a)
-                return false;
-
-            elem = elem->Next;
-        }
-        return true;
+        elem = NULL;
+        return false;
     }
 
-    //удаление элемента с указанной инф. частью
+    //Удаление элемента с указанной инф. частью
     void del_Inf(T a) {
-        if (head) {
-            elem = head;
-            TElem * tmp;
-            if (a == head->Inf) {
-                tmp = head; // Убираем его
-                tail->Next = head->Next;
-                head = head->Next;
-                elem = head; //Элемент a удален
-            }
-            else if (a == tail->Inf) //если это хвост
-            {
-                tmp = head;
-                TElem *tmpTail = tail;
-                while (tmp->Next != tail) //элемент перед хвостом
-                {
-                    tmp = tmp->Next;
-                }
-                tmp->Next = head; //уберем конечный элемент
-                tail = tmp;
-                tmp = tmpTail; //то, что будем удалять delete
-            }
+        TElem *element = found(a) ? elem : NULL; //если список и этот элемент есть
+        if (element != NULL) {
+            TElem *prev = element;
+            if (prev == prev->Next) //если элемент один в списке
+                tail = NULL;
             else {
-                while (elem->Next->Inf != a)
-                {
-                    if (elem == tail && elem->Inf != a)
-                        return;
-
-                    elem = elem->Next;
-                }
-                tmp = elem->Next; // Убираем его
-                elem->Next = elem->Next->Next;
+                do {
+                    prev = prev->Next;
+                } while (prev->Next != element); //находим предыдущий элемент
+                prev->Next = element->Next; //вырезаем элемент
+                if (element == tail) //если элемент был хвостом
+                    tail = prev;
             }
-            delete tmp;
+            delete element; //удаляем элемент
         }
     }
 
     //delete all
     void del_all() {
-        if (head) // если список отсутствует ()
-        {
+        if (tail) {
             tail->Next = NULL;
-            while (head != NULL)  //Пока по адресу не пусто
+            while (tail != NULL)  //пока по адресу не пусто
             {
-                TElem *temp = head; //Временная переменная для хранения адреса следующего элемента
-                head = head->Next;
-                delete temp; //Освобождаем адрес обозначающий начало
+                TElem *temp = tail; //переменная для адреса следующего элемента
+                tail = tail->Next;
+                delete temp;
             }
-            head = NULL; //Обнуляем голову
+            tail = NULL; //обнуляем хвост
         }
     }
 
     //упорядочение нового элемента
     void sort_elem(T value) {
-        elem = head;
-        TElem *tmp = new TElem; // выделяем память на новый элемент
-        tmp->Inf = value;	// записываем значение
+        if (tail) {
+            TElem *newElement = new TElem;
+            newElement->Inf = value; //создали новый элемент
+            TElem *current = tail; //поместили указатель в хвост
+            if (current->Next->Inf < value) { //если нужно вставить после головы
+                do { //ищем предыдущий
+                    current = current->Next;
+                } while (current->Next->Inf < value && current != tail);
 
-        if (head->Inf >= value) {
-            tmp->Next = head;	// указатель с первого элемента на второй
-            head = tmp;			// меняем голову на новый элемент
-            tail->Next = head;	// меняем указатель на начало списка
-        }
-        else {
-            while (elem != tail && value > elem->Next->Inf)
-            {
-                elem = elem->Next; // доходим до конца списка
+                if (current == tail) //если нужно изменить хвост
+                    tail = newElement;
             }
-            tmp->Next = elem->Next;
-            elem->Next = tmp;
+            newElement->Next = current->Next; //вставляем элемент
+            current->Next = newElement;
         }
     }
 
-    //упорядочение текущего элемента
+    //упорядочение текущего элемента (выделяем его из списка и вставляем в нужное место)
     void sort_now_elem() {
-        // elem - текущий элемент (сортируемый)
-        if (head) 
-        {
-            TElem *pos = NULL; // элемент после которого надо вставлять current
-            TElem *prev = tail; // элемент перед current
-
-            while (prev->Next != elem) // пока не найдем предыдущий перед текущим (elem)
-            {
-                if (!pos && prev->Next->Inf > elem->Inf) // если еще не был найден элемент после которого надо вставлять
-                                                        // и следующий элемент от курсора больше elem значит место нашли
-                {
-                    pos = prev ; // нашли позицию куда вставлять текущий элемент
-                }
-
+        if (tail && elem && elem->Inf > elem->Next->Inf) { //если элемент вообще возможно и нужно упорядочить
+            TElem *prev = tail;
+            do {
                 prev = prev->Next;
-            }
-
-
-            prev->Next = elem->Next; // вырезаем элемент
-
-            if (elem == head) // если текущий элемент это голова
-            {
-                head = prev->Next;
-            }
-            else if (elem == tail) // если хвост
-            {
+            } while (prev->Next != elem); //находим предыдущий элемент
+            prev->Next = elem->Next; //вырезаем элемент
+            if (elem == tail) //если элемент был хвостом
                 tail = prev;
-            }
+            //теперь вставим элемент в нужное место
+            TElem *current = tail; //поместили указатель в хвост
+            if (current->Next->Inf < elem->Inf) { //если нужно вставить после головы
+                do { //ищем предыдущий перед тем, куда вставлять
+                    current = current->Next;
+                } while (current->Next->Inf < elem->Inf && current != tail);
 
-            if (!pos || pos == elem) // если таки не была найдена новая позиция для elem
-            {
-                pos = tail;
-                while (pos->Next->Inf < elem->Inf)
-                {
-                    pos = pos->Next;
-                    if (pos->Next == head)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            elem->Next = pos->Next;
-            pos->Next = elem;
-
-            if (pos == tail) // если целевая позиция - после хвоста
-            {               
-                (elem->Inf > tail->Inf) ? tail = elem : head = elem; 
-                // удобочитаемость с тернаркой сильно падает, поэтому код ниже оставляю
-                /*
-                if (elem->Inf > tail->Inf) // если надо добавить в конец
-                {
-                    //elem->Next = head;
-                    //tail->Next = elem;
+                if (current == tail) //если нужно изменить хвост
                     tail = elem;
-                }
-                else // если перед головой
-                {
-                    //tail->Next = elem;
-                    //elem->Next = head;
-                    head = elem;
-                }*/
             }
-
+            elem->Next = current->Next; //вставляем элемент
+            current->Next = elem;
         }
     }
 
     //Вывод списка
     void show()
     {
-        if (head) // если список отсутствует ()
+        if (tail) // если список отсутствует ()
         {
-            TElem *tmp = head;
+            elem = tail->Next;
             do
             {
-                cout << tmp->Inf << "   ";
-                tmp = tmp->Next; //доходим до конца списка
-            } while (tmp != head); //в случае кольцевого списка проверяем есть ли данный элемент последним
-            cout << endl;
+                cout << elem->Inf << "   ";
+                elem = elem->Next; //доходим до конца списка
+            } while (elem != tail->Next); //в случае кольцевого списка проверяем есть ли данный элемент последним
         }
     }
     /*******************************************************************/
-    //метод, переводящий указатель на текущий элемент в начало(конец, при необходимости) списка.
-    void toBeg() {
-        elem = head;
-    }
 
     T getCurrInf() // get current elem copy Inf - получение копии информационной части 
     {
-        if (elem && head)
-            return elem ? elem->Inf : head->Inf;
-        return 0;
+        return elem ? elem->Inf : 0;
     }
 
     //переводит указатель на текущий элемент в начало
     void setCurrToHead()
     {
-        elem = head;
+        elem = tail->Next;
     }
 
     //переводит указатель на текущий элемент в конец
@@ -371,88 +274,61 @@ public:
         elem = tail;
     }
 
-    //проверка существования элементов в списке
-    bool isEmpty() const
-    {
-        return head == 0;
-    }
-
     //перегруженный оператор !, определяющий существование элементов в структуре данных
     bool operator! () {
-        return (head != NULL); // если список отсутствует ()
+        return tail; // если список отсутствует ()
     }
 
     //перегруженный оператор присваивания
     List<T>& operator=(const List<T>& right)
     {
-        if (this == &right) //проверка на самоприсваивание 
+        if (this != &right) //проверка на самоприсваивание 
         {
-            return *this;
-        }
-        // правый список это тот, из которого нужно присвоить значения
-        TElem *rightHead = right.head; //получение головы списка из правого
-        TElem *rightCurrent = rightHead; //текущий элемент из этого же списка
-
-        TElem *tmp = head, *prevTmp = NULL; //курсоры в левом списке
-        if (rightHead)
-        {
-            if (tmp)
+            TElem *leftHead = tail->Next;
+            TElem *rightHead = right.tail->Next;
+            if (right.tail != NULL) //если right не пуст
             {
-                do
+                do //пока есть right and left
                 {
-                    tmp->Inf = rightCurrent->Inf;
-                    tail = tmp;
-                    tmp = tmp->Next;
-                    rightCurrent = rightCurrent->Next;
-                } while (rightCurrent != rightHead && tmp != head); // пока оба списка есть копируем из правого в левый
-
-                tail->Next = head;
-
-                if (tmp != head) // удаляем остаток левого списка
-                {
+                    leftHead->Inf = rightHead->Inf;
+                    leftHead = leftHead->Next;
+                    rightHead = rightHead->Next;
+                } while (rightHead != right.tail->Next && leftHead != tail->Next);
+                //правый закончился, удаляем оставшиеся элементы левого
+                if (rightHead == right.tail->Next) {
                     TElem *del;
-                    while (tmp != head)
+                    do
                     {
-                        del = tmp;
-                        tmp = tmp->Next;
+                        del = leftHead;
+                        leftHead = leftHead->Next;
                         delete del;
-                    }
+                    } while (leftHead != tail->Next);
+                }
+                //левый закончился, добавляем элементы из правого в конец
+                else if (leftHead == tail->Next) {
+                    do //пока есть right
+                    {
+                        addToEnd(rightHead->Inf);
+                        rightHead = rightHead->Next;
+                    } while (rightHead != right.tail->Next);
                 }
             }
-
-            while (rightCurrent != rightHead || !head) //если есть только правый
-            {
-                addToEnd(rightCurrent->Inf);
-                rightCurrent = rightCurrent->Next;
-            }
+            else del_all(); //удаляем все элементы из left
         }
-        else
-        {
-            del_all(); //если правый список полностью пустой - удаляем этот
-        }
-
         return *this;
     }
 
     //конструктор копирования
     List<T>(const List<T>& right)
     {
-        head = NULL;
         elem = NULL;
-        
-        if (right.head != NULL)
-        {
-            *this = right; 
-        }
+        *this = right; // присваиваем с помощью перегруженного оператора присваивания
     }
 
     //перегруженный оператор - переход к следующему элементу
     List<T>& operator++()
     {
-        if (elem)
-            elem = elem->Next;
-        else
-            elem = head;
+        elem = elem ? elem->Next : tail;
         return *this;
     }
 
@@ -461,103 +337,93 @@ public:
     ~List()
     {
         del_all();
-        head = elem = tail = NULL;
+        elem = tail = NULL;
     }
 
     //пузырек
-    bool sort_bubble() {
-        TElem *tmp = head;
-        if (head)
+    bool isSorted() {
+        TElem *tmp = tail;
+        if (tail)
         {
-            bool flag = false;
             do
             {
-                flag = false;
-                tmp = head;
-                while (tmp->Next != head)
-                {
-                    if (tmp->Inf > tmp->Next->Inf)
-                        return false;
-
-                    tmp = tmp->Next;
-                }
-            } while (flag);
-
+                tmp = tmp->Next;
+                if (tmp->Inf > tmp->Next->Inf)
+                    return false;
+            } while (tmp->Next != tail);
             return true;
         }
         return false;
     }
 
-    T& GetCurrInfPtr()
+private:
+    //получить указатель на голову
+    TElem* getHead()
     {
-        return elem ? elem->Inf : head->Inf;
+        return tail->Next;
     }
 
-private:
-
     // Получение указателя на информационную часть текущего элемента
+    T& GetCurrInfPtr()
+    {
+        return elem ? elem->Inf : tail->Next->Inf;
+    }
 
 };
 
 template <class T>
 class Iterator {
 private:
-    const List &list;
+    List<T>::TElem *listP; //указатель на список
 
-    typename List<T>::TElem *iterhead, *itertail, *iterelem, *iter;
 public:
 
-    Iterator(const List<T> &list)
+    Iterator(List<T>& list)
     {
-        iterhead = list.head;
-        itertail = list.tail;
+        listP = list.tail;
     }
 
     //Итератор на основе существующего
-    Iterator(const Iterator<T> &iterator)
+    Iterator(Iterator<T>& iterator)
     {
-        iter = iterator;
+        listP = iterator.listP;
     }
 
-    void toBeg() {
-        iterelem = iterhead;
+    Iterator<T>& operator++()
+    {
+        if (listP != 0)
+        {
+            listP = listP->Next;
+        }
+        return *this;
     }
 
-    //get current elem copy Inf - получение копии информационной части 
-    T getCurrInf1()
+    Iterator<T>& operator=(Iterator<T>& right)
     {
-        return iterelem ? iterelem->Inf : iterhead->Inf;
+        if (this != &right)
+        {
+            listP = right.listP;
+        }
+        return *this;
     }
 
-    //переводит указатель на текущий элемент в начало
-    void setCurrToHead()
+    Iterator<T>& operator=(List<T>& list)
     {
-        iterelem = iterhead;
+        if (this != &list)
+        {
+            listP = list.tail;
+        }
+        return *this;
     }
 
-    //переводит указатель на текущий элемент в конец
-    void setCurrToTail()
+    bool operator!()
     {
-        iterelem = itertail;
+        return listP;
     }
 
-private:
-
-    //получить указатель на голову
-    typename List<T>::TElem* getHead()
+    T getCurrInf()
     {
-        return iterhead;
-    }
-
-    //Получение указателя на информационную часть текущего элемента
-    T& GetCurrInfPtr()
-    {
-        return iterelem ? iterelem->Inf : iterhead->Inf;
-    }
-
-    ~Iterator()
-    {
-        iterhead = itertail = iterelem = iter = NULL;
+        return (listP) ? listP->Inf : NULL;
     }
 
 };
@@ -590,189 +456,139 @@ int main()
     srand(time(0));
     int tmp, b;
     unsigned int start_time, end_time, search_time;
-    List<int> student_test, student_testcopy;
+    List<int> student_test, student_testcopy, student_sort;
     TBList<int> student_test1;
     //заполним список
-    for (int i = 1; i <= 10; i = i + 1)
+    for (int i = 1; i <= 10; i = i + 2)
     {
         tmp = rand() % 25;
         student_test.addToBegin(tmp);
+        student_testcopy.addToBegin(tmp);
     }
     cout << "\n Список:" << endl;
     student_test.show();
 
-    // delete before commit------------------------------------
-    /*student_test.del_all();
-    student_test.addToEnd(0);
-    student_test.addToEnd(1);
-    student_test.addToEnd(9);
-    student_test.addToEnd(11);
-    student_testcopy = student_test;
-    cout << "\nstudent_testcopy.show(): \n";
-    student_testcopy.show();
-    cout << "\nstudent_test.show(): \n";
-    student_test.show();
+    //List<int> st(student_test); //исп. конструктор копирования
 
+    while (true) {
 
-    student_test.del_all();
-    student_test.addToEnd(1);
-    student_test.addToEnd(9);
-    student_test.addToEnd(11);
-    student_test.addToEnd(19);
-    student_test.addToEnd(14);
-    student_test.addToEnd(20);
-    student_test.addToEnd(16);
-    student_testcopy = student_test;
+        int variant = menu();
 
-    cout << "\nstudent_testcopy.show(): \n";
-    student_testcopy.show();
-    cout << "\nstudent_test.show(): \n";
-    student_test.show();
+        switch (variant) {
+        case 1:
+            //проверка сортировки
+            for (int i = 1; i <= 1000000; i = i + 1)
+            {
+                tmp = rand() % 1000000;
+                student_sort.addToBegin(tmp);
+                student_test1.AddBeforeHead(tmp);
+            }
+            cout << " Список из 1000000 элементов. Сортировка.\n" << endl;
+            start_time = clock(); // начальное время
+            student_sort.sort();
+            end_time = clock(); // конечное время
+            search_time = end_time - start_time; // искомое время
+            cout << " Время работы сортировки слиянием: " << ((float)search_time) / CLOCKS_PER_SEC << " с.";
 
+            start_time = clock(); // начальное время
+            student_test1.SortListBiDir();
+            end_time = clock(); // конечное время
+            search_time = end_time - start_time; // искомое время
+            cout << "\n Время работы сортировки в примере: " << ((float)search_time) / CLOCKS_PER_SEC << " с.\n";
 
-    student_test.sort();
-    student_test.show();
-    student_test.setCurrToHead();
-    int *val = NULL;
-    for (int i = 0; i < 10; i++)
-    {
-        val = &student_test.GetCurrInfPtr();
-        cout << "Текущий элемент: " << student_test.getCurrInf();
+            //проверка сортировки
+            if (student_sort.isSorted())
+                cout << " Перестановок в сорт. пузырьком нет - список отсортирован верно.\n\n";
+            break;
 
-        std::cin >> *val;
-        student_test.sort_now_elem();
-
-        student_test.show();
-        std::cout << std::endl;
-    }
-
-
-    */
-    //---------------------------------------------------------
-
-    //student_testcopy.show();
-    List<int> st(student_test); //исп. конструктор копирования
-
-    int variant = menu();
-
-    switch (variant) {
-    case 1:
-        //проверка сортировки
-        student_test.del_all();
-        for (int i = 1; i <= 1000000; i = i + 1)
-        {
+        case 2:
+            //add to beg
             tmp = rand() % 100;
-            student_test.addToBegin(tmp); // 
-            student_test1.AddBeforeHead(tmp); 
+            cout << endl << "\n Добавление элемента в начало: " << tmp << endl;
+            student_test.addToBegin(tmp);
+            student_test.show();
+
+            //add to end
+            tmp = rand() % 100;
+            cout << endl << "\n Добавление элемента в конец: " << tmp << endl;
+            student_test.addToEnd(tmp);
+            student_test.show();
+            cout << endl;
+            break;
+
+        case 3:
+            //поиск элемента с указанной инф. частью
+            cout << "\n\n Введите значение элемента для поиска\n";
+            int val;
+            cin >> val;
+            if (student_test.found(val))
+                cout << " Элемент сущестует.\n";
+            else
+                cout << " Элемент не сущестует.\n";
+            break;
+
+        case 4: //удаление элемента с указанной инф. частью
+            cout << "\n\n Введите значение элемента, который необходимо удалить:\n";
+            cin >> val;
+            student_test.del_Inf(val);
+            student_test.show();
+            break;
+
+        case 5: //упорядочение нового элемента
+            cout << "\n\n Введите значение элемента, который необходимо вставить\n";
+            cin >> val;
+            student_test.sort_elem(val);
+            student_test.show();
+            break;
+
+        case 6: //упорядочение текущего элемента
+            cout << "\n\n Упорядочение текущего элемента:\n";
+            student_test.sort_now_elem();
+            student_test.show();
+            break;
+
+        case 7:
+            //перегруженный оператор !, определяющий существование элементов в структуре данных
+            cout << "\n Определение существования элементов в структуре данных:\n";
+            if (!student_test) cout << "\n Список не пуст\n";
+            else cout << "\n Список пуст\n";
+            break;
+
+        case 8: //копирование списка
+            cout << "\n Новый список - копия старого\n";
+            student_testcopy = student_test;
+            student_testcopy.show();
+            break;
+
+        case 9: //получение копии информационной части 
+            b = student_test.getCurrInf();
+            cout << "\n Копия информационной части текущего элемента\n " << b << endl;
+
+            //следующий элемент
+            ++student_test;
+            b = student_test.getCurrInf();
+            cout << "\n Переходим к следующему элементу\n " << b << endl;
+
+            //переход к голове списка
+            student_test.setCurrToHead();
+            b = student_test.getCurrInf();
+            cout << "\n Голова списка - текущий элемент\n " << b << endl;
+            break;
+
+        case 10:
+            cout << " Новый список - копия старого\n";
+            //st.show();
+            break;
+
+        case 11:
+            exit(EXIT_SUCCESS);
+            break;
+
+        default:
+            cout << " Вы выбрали неверный вариант.\n";
+            exit(EXIT_FAILURE);
+            break;
         }
-
-        cout << " Список из 1000000 элементов. Сортировка." << endl;
-
-        start_time = clock(); // начальное время
-        student_test.sort();
-        end_time = clock(); // конечное время
-        search_time = end_time - start_time; // искомое время
-        cout << " Время работы сортировки слиянием: " << ((float)search_time) / CLOCKS_PER_SEC << " с.";
-
-        start_time = clock(); // начальное время
-        student_test1.SortListBiDir();
-        end_time = clock(); // конечное время
-        search_time = end_time - start_time; // искомое время
-        cout << "\n Время работы сортировки в примере: " << ((float)search_time) / CLOCKS_PER_SEC << " с.\n";
-
-        //проверка сортировки
-        if (student_test.sort_bubble())
-            cout << " Перестановок нет - список отсортирован верно.\n";
-
-        break;
-
-    case 2:
-        //add to beg
-        tmp = rand() % 100;
-        cout << endl << "\n Добавление элемента в начало: " << tmp << endl;
-        student_test.addToBegin(tmp);
-        student_test.show();
-
-        //add to end
-        tmp = rand() % 100;
-        cout << endl << "\n Добавление элемента в конец: " << tmp << endl;
-        student_test.addToEnd(tmp);
-        student_test.show();
-        cout << endl;
-        break;
-
-    case 3:
-        //поиск элемента с указанной инф. частью
-        cout << "\n\n Введите значение элемента для поиска\n";
-        int val;
-        cin >> val;
-        if (student_test.found(val))
-            cout << " Элемент сущестует.\n";
-        else
-            cout << " Элемент не сущестует.\n";
-        break;
-
-    case 4: //удаление элемента с указанной инф. частью
-        cout << "\n\n Введите значение элемента, который необходимо удалить:\n";
-        cin >> val;
-        student_test.del_Inf(val);
-        student_test.show();
-        break;
-
-    case 5: //упорядочение нового элемента
-        cout << "\n\n Введите значение элемента, который необходимо вставить\n";
-        cin >> val;
-        student_test.sort_elem(val);
-        student_test.show();
-        break;
-
-    case 6: //упорядочение текущего элемента
-        cout << "\n\n Упорядочение текущего элемента:\n";
-        student_test.sort_now_elem();
-        student_test.show();
-        break;
-
-    case 7:
-        //перегруженный оператор !, определяющий существование элементов в структуре данных
-        cout << "\n Определение существования элементов в структуре данных:\n";
-        if (!student_test) cout << "\n Список не пуст\n";
-        else cout << "\n Список пуст\n";
-        break;
-
-    case 8: //копирование списка
-        cout << "\n Новый список - копия старого\n";
-        student_testcopy = student_test;
-        student_testcopy.show();
-        break;
-
-    case 9: //получение копии информационной части 
-        b = student_test.getCurrInf();
-        cout << "\n Копия информационной части текущего элемента\n " << b << endl;
-
-        //следующий элемент
-        ++student_test;
-        b = student_test.getCurrInf();
-        cout << "\n Переходим к следующему элементу\n " << b << endl;
-
-        //переход к голове списка
-        student_test.setCurrToHead();
-        b = student_test.getCurrInf();
-        cout << "\n Голова списка - текущий элемент\n " << b << endl;
-        break;
-
-    case 10:
-        cout << " Новый список - копия старого\n";
-        st.show();
-        break;
-
-    case 11:
-        exit(EXIT_SUCCESS);
-        break;
-
-    default:
-        cout << " Вы выбрали неверный вариант.\n";
-        exit(EXIT_FAILURE);
-        break;
     }
     cout << endl << endl;
 

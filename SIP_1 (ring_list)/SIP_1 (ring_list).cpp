@@ -378,6 +378,11 @@ private:
 
 public:
 
+    Iterator()
+    {
+        listP = NULL;
+    }
+
     Iterator(List<T>& list)
     {
         listP = list.tail;

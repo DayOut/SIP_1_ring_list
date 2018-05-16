@@ -101,25 +101,28 @@ public:
         if (tail)
         {
             TElem *prev = tail;
-            TElem *cur = NULL;
+            TElem *cur = tail->Next;
             do {
-                if (prev->Next->Inf == a) {
-                    cur = prev->Next;
+                if (cur->Inf == a) 
+                {
+                    if (cur != cur->Next)  //если элемент не один в списке
+                    {
+                        prev->Next = cur->Next; //вырезаем элемент
+                        if (cur == tail) //если элемент был хвостом
+                            tail = prev;
+                    }
+                    else  //если элемент один в списке
+                        tail = NULL;
+                    
                     break;
                 }
-                prev = prev->Next;
-            } while (prev != tail);
+                
+                prev = cur;
+                cur = cur->Next;
+                
+            } while (cur != tail);
 
-            if (cur != NULL) { //если элемент вообще найден
-                if (prev != prev->Next) { //если элемент не один в списке
-                    prev->Next = cur->Next; //вырезаем элемент
-                    if (cur == tail) //если элемент был хвостом
-                        tail = prev;
-                }
-                else  //если элемент один в списке
-                    tail = NULL;
-                delete cur; //удаляем элемент
-            }
+            delete cur; //удаляем элемент
         }
     }
 
@@ -127,14 +130,16 @@ public:
     void del_all() {
         if (tail) {
             TElem *current, *next;
-            current = tail;
-            next = current->Next;
+            current = tail->Next;
+            tail->Next = NULL; // разорвали кольцо
+            tail = current; // и идем с головы
 
-            do {
-                current = next;
-                next = current->Next;
+            while (tail) // пока что-то есть
+            {
+                current = tail; 
+                tail = tail->Next;
                 delete current;
-            } while (current != tail);
+            }
 
             delete tail;
             tail = NULL;
@@ -205,9 +210,11 @@ public:
             do {
                 prev = prev->Next;
             } while (prev->Next != elem); //находим предыдущий элемент
+
             prev->Next = elem->Next; //вырезаем элемент
             if (elem == tail) //если элемент был хвостом
                 tail = prev;
+
             //теперь вставим элемент в нужное место
             TElem *current = tail; //поместили указатель в хвост
             if (current->Next->Inf < elem->Inf) { //если нужно вставить после головы
@@ -265,36 +272,54 @@ public:
     {
         if (this != &right) //проверка на самоприсваивание 
         {
-            TElem *leftHead = tail->Next;
-            TElem *rightHead = right.tail->Next;
-            if (right.tail != NULL) //если right не пуст
+            TElem *leftHead = tail, *leftCur, *leftCurPrev;
+            TElem *rightHead = right.tail, *rightCur;
+
+            if (rightHead) // если есть правый список
             {
-                do //пока есть right and left
+                rightHead = rightHead->Next; //переход с хвоста на голову
+                rightCur = rightHead; 
+                
+                if (tail)
                 {
-                    leftHead->Inf = rightHead->Inf;
                     leftHead = leftHead->Next;
-                    rightHead = rightHead->Next;
-                } while (rightHead != right.tail->Next && leftHead != tail->Next);
-                //правый закончился, удаляем оставшиеся элементы левого
-                if (rightHead == right.tail->Next) {
-                    TElem *del;
-                    do
+                    leftCur = leftHead;
+                    do //пока есть right and left
                     {
-                        del = leftHead;
-                        leftHead = leftHead->Next;
-                        delete del;
-                    } while (leftHead != tail->Next);
+                        leftCur->Inf = rightCur->Inf;
+                        leftCurPrev = leftCur;
+                        leftCur = leftCur->Next;
+                        rightCur = rightCur->Next;
+                    } while (rightCur != rightHead && leftCur != leftHead);
+
+
+                    //правый закончился, удаляем оставшиеся элементы левого
+                    if (rightCur == right.tail->Next) {
+                        TElem *del;
+                        leftCurPrev->Next = leftHead;
+                        tail = leftCurPrev;
+
+                        do
+                        {
+                            del = leftCur;
+                            leftCur = leftCur->Next;
+                            delete del;
+                        } while (leftCur != leftHead);
+                    }
                 }
+
                 //левый закончился, добавляем элементы из правого в конец
-                if (leftHead == tail->Next) {
+                if (!tail || rightCur != rightHead) {
                     do //пока есть right
                     {
-                        addToEnd(rightHead->Inf);
-                        rightHead = rightHead->Next;
-                    } while (rightHead != right.tail->Next);
-                }
+                        addToEnd(rightCur->Inf);
+                        rightCur = rightCur->Next;
+                    } while (rightCur != right.tail->Next);
+                }                
+                
             }
             else del_all(); //удаляем все элементы из left
+            
 
         }
         return *this;
@@ -527,9 +552,10 @@ int main()
     List<int> student_test, student_testcopy, student_sort;
     TBList<int> student_test1;
     //заполним список
-    for (int i = 1; i <= 10; i = i + 2)
+    for (int i = 1; i <= 10; i = i++)
     {
-        tmp = rand() % 25;
+        //tmp = rand() % 25;
+        tmp = i;
         student_test.addToBegin(tmp);
         //student_testcopy.addToBegin(tmp);
     }
@@ -625,7 +651,29 @@ int main()
         case 8: //копирование списка
             cout << "\n Новый список - копия старого\n";
             student_testcopy = student_test;
+            cout << "Создаем с нуля \n";
             student_testcopy.show();
+            cout << endl;
+
+            student_test.addToBegin(57);
+            student_testcopy = student_test;
+            cout << "Старый на 1 меньше нового \n";
+            student_testcopy.show();
+            cout << endl;
+
+            student_testcopy.addToEnd(34);
+            student_testcopy = student_test;
+            cout << "старый на 1 больше нового \n";
+            student_testcopy.show();
+            cout << endl;
+
+            student_test.del_all();
+            student_testcopy = student_test;
+            cout << "Новый это ноль \n";
+            student_testcopy.show();
+            cout << endl;
+
+
             break;
 
         case 9: //получение копии информационной части 

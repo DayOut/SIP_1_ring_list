@@ -205,6 +205,84 @@ public:
 
     //упорядочение текущего элемента (выделяем его из списка и вставляем в нужное место)
     void sort_now_elem() {
+
+        if (tail) // если есть список
+        {
+            TElem *pos = NULL; // элемент после которого будет вставка
+            TElem *prev = tail, *cur = tail->Next;
+            bool found = false;
+
+            while (cur != elem)
+            {
+                if (cur->Inf >= elem->Inf) // нашли куда вставлять
+                {
+                    pos = prev;
+                    found = true;
+                    break;
+                    
+                }
+                prev = cur;
+                cur = cur->Next;
+            }
+
+            while (cur != elem)
+            {
+                prev = cur;
+                cur = cur->Next;
+            }
+
+            if (!found)
+            {
+                cur = cur->Next;
+                while (cur->Inf <= elem->Inf)
+                {
+                    pos = cur;
+                    cur = cur->Next;
+
+                    if (cur == tail->Next)
+                    {
+                        break;
+                    }
+                }
+            }
+          
+            if (pos != prev) // если найденное место не равно предыдущему перед сортируемым элементом, значит надо сортировать
+            {
+                if (!pos)
+                    pos = tail;
+
+                if (pos == elem && prev == tail)
+                {
+                    prev->Next = elem->Next;
+                    elem->Next = prev->Next;
+                    prev->Next = elem;
+                }
+                else
+                {
+                    if (elem == tail)
+                    {
+                        tail = prev;
+                    }
+
+                    //вырезаем элемент
+                    prev->Next = elem->Next;
+
+                    //вставка
+                    elem->Next = pos->Next;
+                    pos->Next = elem;
+                }
+
+            }
+            
+            if (pos == tail)
+            {
+                elem->Inf > tail->Inf ? tail = elem : tail = tail;
+            }
+
+
+        }
+
+        /*
         if (tail && elem->Inf > elem->Next->Inf) { //если элемент вообще возможно и нужно упорядочить
             TElem *prev = tail;
             do {
@@ -227,7 +305,7 @@ public:
             }
             elem->Next = current->Next; //вставляем элемент
             current->Next = elem;
-        }
+        }*/
     }
 
     //Вывод списка
@@ -235,12 +313,13 @@ public:
     {
         if (tail) // если список отсутствует ()
         {
-            elem = tail->Next;
+            TElem *tmp = tail->Next;
+            //elem = tail->Next;
             do
             {
-                cout << elem->Inf << "   ";
-                elem = elem->Next; //доходим до конца списка
-            } while (elem != tail->Next); //в случае кольцевого списка проверяем есть ли данный элемент последним
+                cout << tmp->Inf << "   ";
+                tmp = tmp->Next; //доходим до конца списка
+            } while (tmp != tail->Next); //в случае кольцевого списка проверяем есть ли данный элемент последним
         }
     }
     /*******************************************************************/
@@ -366,7 +445,11 @@ public:
     // Получение указателя на информационную часть текущего элемента
     T& GetCurrInfPtr()
     {
-        return elem ? elem->Inf : tail->Next->Inf;
+        if (!elem)
+        {
+            elem = tail->Next;
+        }
+        return elem->Inf;
     }
 
 private:
@@ -552,7 +635,7 @@ int main()
     List<int> student_test, student_testcopy, student_sort;
     TBList<int> student_test1;
     //заполним список
-    for (int i = 1; i <= 10; i = i++)
+    for (int i = 1; i <= 10; i = i + 2)
     {
         //tmp = rand() % 25;
         tmp = i;
@@ -567,6 +650,8 @@ int main()
     while (true) {
 
         int variant = menu();
+        //tmp var
+        int *tmpval = NULL;
 
         switch (variant) {
         case 1:
@@ -637,8 +722,23 @@ int main()
 
         case 6: //упорядочение текущего элемента
             cout << "\n\n Упорядочение текущего элемента:\n";
-            student_test.sort_now_elem();
+            student_test.sort();
             student_test.show();
+            
+            for (int i = 0; i < 10; i++)
+            {
+                std::cout << "Current elem : " << student_test.GetCurrInfPtr() << std::endl;
+                tmpval = &student_test.GetCurrInfPtr();
+                cin >> *tmpval;
+                student_test.sort_now_elem();
+                //cout << student_test << std::endl;
+                student_test.show();
+
+            }
+
+            /*
+            student_test.sort_now_elem();
+            student_test.show();*/
             break;
 
         case 7:

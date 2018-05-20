@@ -64,6 +64,7 @@ public:
             tail = tmp;
             tmp->Next = tail;
         }
+        elem = tail;
     }
 
     //ƒобавление в начало списка
@@ -76,6 +77,7 @@ public:
         else
             tail = tmp;
         tail->Next = tmp; //указатель с первого элемента на второй
+        elem = tail->Next;
     }
 
     //ѕоиск элемента
@@ -128,14 +130,17 @@ public:
     void del_all() {
         if (tail) {
             TElem *current, *next;
-            current = tail;
-            next = current->Next;
+            current = tail->Next;
+            tail->Next = NULL;
+            tail = current; 
+            // = current->Next;
 
-            do {
-                current = next;
-                next = current->Next;
+            while (tail) 
+            {
+                current = tail;
+                tail = tail->Next;
                 delete current;
-            } while (current != tail);
+            }
 
             delete tail;
             tail = NULL;
@@ -165,7 +170,97 @@ public:
         }
     }
 
-    //упор€дочение текущего элемента (выдел€ем его из списка и вставл€ем в нужное место)
+    void sort_now_elem()
+    {
+        // elem - текущий элемент (сортируемый)
+        if (tail)
+        {
+            TElem *pos = NULL; // элемент после которого надо вставл€ть current
+            TElem *prev = tail, *cur = tail->Next; // элемент перед current и временный курсор
+            bool findFlag = false;
+
+            while (cur != elem) // пока не найдем предыдущий перед текущим (elem)
+            {
+                if (cur->Inf >= elem->Inf) // ≈сли нашли место дл€ вставки
+                {
+                    pos = prev;
+                    findFlag = true;
+                    break;
+                }
+                prev = cur;
+                cur = cur->Next;
+            }
+
+            for (; cur != elem; prev = cur, cur = cur->Next);
+
+            if (!findFlag) // вставл€ем справа от сортируемого элемента
+            {
+                cur = cur->Next;
+                pos = prev;
+
+                while (cur != tail->Next)
+                {
+                    if (cur->Inf >= elem->Inf) // если уже прошли цикл и не нашли (значит надо вставл€ть после хвоста)
+                    {
+                        if (pos) // проверка на случай если найденное место совпадает с текущим
+                        {
+                            if (elem == tail)
+                            {
+                                tail = elem->Next;
+                            }
+
+                            prev->Next = elem->Next; // вырезаем элемент
+
+                            elem->Next = pos->Next; //вставка
+                            pos->Next = elem;
+                        }
+
+                        return;
+                    }
+                    pos = cur;
+                    cur = cur->Next;
+                }
+
+                /*
+                ≈сли в списке так и не нашли место -> надо вставл€ть в конец
+                чтобы не провер€ть это в цикле, проще вынести сюда, так как в любом случае попадем сюда только в этом случае
+                */
+
+                //вставка в конец списка
+                if (elem == tail)
+                {
+                    tail = prev;
+                }
+
+                prev->Next = elem->Next; // вырезаем элемент
+
+                elem->Next = pos->Next; //вставка
+                pos->Next = elem;
+                if (pos == tail)
+                    tail = elem;
+                
+
+                return;
+            }
+
+            //вставл€ем слева от сортируемого элемента 
+
+            if (elem == tail)
+                tail = prev;
+
+            if (pos != elem)
+            {
+                prev->Next = elem->Next;// вырезаем элемент
+                elem->Next = pos->Next;//вставка
+                pos->Next = elem;
+            }
+
+
+        }
+    }
+
+
+   /* //упор€дочение текущего элемента (выдел€ем его из списка и вставл€ем в нужное место)
     void sort_now_elem() {
         if (tail) // если есть список
         {
@@ -238,7 +333,7 @@ public:
                 elem->Inf > tail->Inf ? tail = elem : tail = tail;
             }
         }
-    }
+    }*/
 
     //¬ывод списка
     void show()
@@ -374,9 +469,19 @@ public:
         {
             return elem->Inf;
         }
-        //throw
+        //return elem->Inf;
+        throw -1; // errcode -1 - отсутствует список
 
     }
+    /*T& GetCurrInfPtr()
+    {
+        if (!elem)
+        {
+            elem = tail->Next;
+        }
+        return elem->Inf;
+    }*/
+
 
 private:
     void mergeSort(TElem *&root)
@@ -566,7 +671,8 @@ int main()
     //заполним список
     for (int i = 1; i <= 10; i = i + 2)
     {
-        tmp = rand() % 25;
+        //tmp = rand() % 25;
+        tmp = i;
         student_test.addToBegin(tmp);
         //student_testcopy.addToBegin(tmp);
     }
@@ -578,6 +684,8 @@ int main()
     while (true) {
 
         int variant = menu();
+        //tmp var
+        int *tmpval = NULL;
 
         switch (variant) {
         case 1:
@@ -648,8 +756,27 @@ int main()
 
         case 6: //упор€дочение текущего элемента
             cout << "\n\n ”пор€дочение текущего элемента:\n";
-            student_test.sort_now_elem();
+            student_test.sort();
             student_test.show();
+            try
+            {
+                student_test.del_all();
+                for (int i = 0; i < 100; i++)
+                {
+                    std::cout << "Current elem : " << student_test.GetCurrInfPtr() << std::endl;
+                    tmpval = &student_test.GetCurrInfPtr();
+                    cin >> *tmpval;
+                    student_test.sort_now_elem();
+                    //cout << student_test << std::endl;
+                    student_test.show();
+
+                }
+            }
+            catch (int e)
+            {
+                cout << "\nSome error happened. Error code: " << e << endl;
+            }
+            
             break;
 
         case 7:

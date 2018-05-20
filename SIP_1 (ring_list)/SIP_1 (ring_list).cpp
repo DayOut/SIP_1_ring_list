@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "blist.h"
+//#include "blist.h"
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -103,26 +103,24 @@ public:
             TElem *prev = tail;
             TElem *cur = tail->Next;
             do {
-                if (cur->Inf == a) 
-                {
-                    if (cur != cur->Next)  //если элемент не один в списке
-                    {
-                        prev->Next = cur->Next; //вырезаем элемент
-                        if (cur == tail) //если элемент был хвостом
+                if (cur->Inf == a) {
+                    if (cur != cur->Next) {
+                        prev->Next = cur->Next;
+                        if (cur == tail)
                             tail = prev;
                     }
-                    else  //если элемент один в списке
+                    else
                         tail = NULL;
-                    
+
                     break;
                 }
-                
+
                 prev = cur;
                 cur = cur->Next;
-                
+
             } while (cur != tail);
 
-            delete cur; //удаляем элемент
+            delete cur;
         }
     }
 
@@ -130,19 +128,18 @@ public:
     void del_all() {
         if (tail) {
             TElem *current, *next;
-            current = tail->Next;
-            tail->Next = NULL; // разорвали кольцо
-            tail = current; // и идем с головы
+            current = tail;
+            next = current->Next;
 
-            while (tail) // пока что-то есть
-            {
-                current = tail; 
-                tail = tail->Next;
+            do {
+                current = next;
+                next = current->Next;
                 delete current;
-            }
+            } while (current != tail);
 
             delete tail;
             tail = NULL;
+            elem = NULL;
         }
     }
 
@@ -150,65 +147,29 @@ public:
     void sort_elem(T value) {
         if (tail) {
             TElem *newElement = new TElem;
-            newElement->Inf = value; //создали новый элемент
-            TElem *prev = tail; //поместили указатель в хвост
-            TElem *cur = tail->Next;
-
-            while (cur->Inf < value && prev != tail) { //ищем предыдущий
-                prev = prev->Next;
-                cur = cur->Next;
+            newElement->Inf = value;
+            TElem *current = tail;
+            if (current->Inf < value) { //если вставляем после хвоста
+                newElement->Next = current->Next;
+                current->Next = newElement;
+                tail = newElement;
+            }
+            else {
+                while (current->Next->Inf < value) {
+                    current = current->Next;
+                }
+                newElement->Next = current->Next;
+                current->Next = newElement;
             }
 
-            if (prev == tail && tail->Next->Inf < value) //если нужно изменить хвост
-                tail = newElement;
-
-            newElement->Next = prev->Next; //вставляем элемент
-            prev->Next = newElement;
         }
-        /*
-        TElem *newElement = new TElem;
-        newElement->Inf = value;
-        TElem *current = tail;
-
-        if (current->Inf < value){
-        newElement->Next = current->Next;
-        current->Next = newElement;
-        tail = newElement;
-        }
-        else {
-        do {
-        current = current->Next;
-        } while (current->Next->Inf < value); //?????
-
-        newElement->Next = current->Next;
-        current->Next = newElement;
-        }
-        */
     }
-    //void sort_elem(T value) {
-    //	if (tail) {
-    //		TElem *newElement = new TElem;
-    //		newElement->Inf = value; //создали новый элемент
-    //		TElem *current = tail; //поместили указатель в хвост
-    //		if (current->Next->Inf < value) { //если нужно вставить после головы
-    //			do { //ищем предыдущий
-    //				current = current->Next;
-    //			} while (current->Next->Inf < value && current != tail);
-
-    //			if (current == tail) //если нужно изменить хвост
-    //				tail = newElement;
-    //		}
-    //		newElement->Next = current->Next; //вставляем элемент
-    //		current->Next = newElement;
-    //	}
-    //}
 
     //упорядочение текущего элемента (выделяем его из списка и вставляем в нужное место)
     void sort_now_elem() {
-
         if (tail) // если есть список
         {
-            TElem *pos = NULL; // элемент после которого будет вставка
+            TElem *prevNew = NULL; // элемент после которого будет вставка
             TElem *prev = tail, *cur = tail->Next;
             bool found = false;
 
@@ -216,42 +177,43 @@ public:
             {
                 if (cur->Inf >= elem->Inf) // нашли куда вставлять
                 {
-                    pos = prev;
+                    prevNew = prev;
                     found = true;
                     break;
-                    
                 }
                 prev = cur;
                 cur = cur->Next;
             }
 
-            while (cur != elem)
-            {
-                prev = cur;
-                cur = cur->Next;
-            }
+            for (; cur != elem; prev = cur, cur = cur->Next);
 
             if (!found)
             {
                 cur = cur->Next;
-                while (cur->Inf <= elem->Inf)
+                while (cur != tail->Next)
                 {
-                    pos = cur;
+                    if (cur->Inf <= elem->Inf) {
+                        if (elem->Next != cur) {
+
+                        }
+                        return;
+                    }
+
+                    prevNew = cur;
                     cur = cur->Next;
 
-                    if (cur == tail->Next)
-                    {
-                        break;
-                    }
-                }
-            }
-          
-            if (pos != prev) // если найденное место не равно предыдущему перед сортируемым элементом, значит надо сортировать
-            {
-                if (!pos)
-                    pos = tail;
 
-                if (pos == elem && prev == tail)
+                }
+                return;
+            }
+
+
+            if (prevNew != prev) // если найденное место не равно предыдущему перед сортируемым элементом, значит надо сортировать
+            {
+                if (!prevNew)
+                    prevNew = tail;
+
+                if (prevNew == elem && prev == tail)
                 {
                     prev->Next = elem->Next;
                     elem->Next = prev->Next;
@@ -260,52 +222,22 @@ public:
                 else
                 {
                     if (elem == tail)
-                    {
                         tail = prev;
-                    }
-
                     //вырезаем элемент
                     prev->Next = elem->Next;
 
                     //вставка
-                    elem->Next = pos->Next;
-                    pos->Next = elem;
+                    elem->Next = prevNew->Next;
+                    prevNew->Next = elem;
                 }
 
             }
-            
-            if (pos == tail)
+
+            if (prevNew == tail)
             {
                 elem->Inf > tail->Inf ? tail = elem : tail = tail;
             }
-
-
         }
-
-        /*
-        if (tail && elem->Inf > elem->Next->Inf) { //если элемент вообще возможно и нужно упорядочить
-            TElem *prev = tail;
-            do {
-                prev = prev->Next;
-            } while (prev->Next != elem); //находим предыдущий элемент
-
-            prev->Next = elem->Next; //вырезаем элемент
-            if (elem == tail) //если элемент был хвостом
-                tail = prev;
-
-            //теперь вставим элемент в нужное место
-            TElem *current = tail; //поместили указатель в хвост
-            if (current->Next->Inf < elem->Inf) { //если нужно вставить после головы
-                do { //ищем предыдущий перед тем, куда вставлять
-                    current = current->Next;
-                } while (current->Next->Inf < elem->Inf && current != tail);
-
-                if (current == tail) //если нужно изменить хвост
-                    tail = elem;
-            }
-            elem->Next = current->Next; //вставляем элемент
-            current->Next = elem;
-        }*/
     }
 
     //Вывод списка
@@ -314,7 +246,6 @@ public:
         if (tail) // если список отсутствует ()
         {
             TElem *tmp = tail->Next;
-            //elem = tail->Next;
             do
             {
                 cout << tmp->Inf << "   ";
@@ -357,8 +288,8 @@ public:
             if (rightHead) // если есть правый список
             {
                 rightHead = rightHead->Next; //переход с хвоста на голову
-                rightCur = rightHead; 
-                
+                rightCur = rightHead;
+
                 if (tail)
                 {
                     leftHead = leftHead->Next;
@@ -371,35 +302,30 @@ public:
                         rightCur = rightCur->Next;
                     } while (rightCur != rightHead && leftCur != leftHead);
 
-
                     //правый закончился, удаляем оставшиеся элементы левого
                     if (rightCur == right.tail->Next) {
                         TElem *del;
                         leftCurPrev->Next = leftHead;
                         tail = leftCurPrev;
-
-                        do
-                        {
+                        do {
                             del = leftCur;
                             leftCur = leftCur->Next;
                             delete del;
                         } while (leftCur != leftHead);
                     }
                 }
-
                 //левый закончился, добавляем элементы из правого в конец
-                if (!tail || rightCur != rightHead) {
-                    do //пока есть right
-                    {
-                        addToEnd(rightCur->Inf);
-                        rightCur = rightCur->Next;
-                    } while (rightCur != right.tail->Next);
-                }                
-                
+                else {
+                    if (rightCur != rightHead) {
+                        do //пока есть right
+                        {
+                            addToEnd(rightCur->Inf);
+                            rightCur = rightCur->Next;
+                        } while (rightCur != right.tail->Next);
+                    }
+                }
             }
             else del_all(); //удаляем все элементы из left
-            
-
         }
         return *this;
     }
@@ -423,7 +349,6 @@ public:
     ~List()
     {
         del_all();
-        elem = NULL;
     }
 
     //пузырек
@@ -445,11 +370,12 @@ public:
     // Получение указателя на информационную часть текущего элемента
     T& GetCurrInfPtr()
     {
-        if (!elem)
+        if (tail)
         {
-            elem = tail->Next;
+            return elem->Inf;
         }
-        return elem->Inf;
+        //throw
+
     }
 
 private:
@@ -525,7 +451,6 @@ private:
         }
     }
 
-
     //получить указатель на голову
     TElem* getHead()
     {
@@ -559,10 +484,7 @@ public:
 
     Iterator<T>& operator++()
     {
-        if (cur != 0)
-        {
-            cur = cur->Next;
-        }
+        cur = cur ? cur->Next : tail;
         return *this;
     }
 
@@ -590,16 +512,14 @@ public:
             tmp = cur->Inf;
             return true;
         }
-        else
-            return false;
-
-
     }
 
     T& getCurrInfRef() // Ссылка на информационную часть элемента
     {
-
-        return cur->Inf;
+        if (cur)
+        {
+            return cur->Inf;
+        }
     }
 
 };
@@ -626,6 +546,15 @@ int menu()
     return variant;
 }
 
+
+
+/*if (cur != 0)
+{
+cur = cur->Next;
+}
+return *this;*/
+
+
 int main()
 {
     setlocale(LC_ALL, "rus");
@@ -633,25 +562,22 @@ int main()
     int tmp, b;
     unsigned int start_time, end_time, search_time;
     List<int> student_test, student_testcopy, student_sort;
-    TBList<int> student_test1;
+    //TBList<int> student_test1;
     //заполним список
     for (int i = 1; i <= 10; i = i + 2)
     {
-        //tmp = rand() % 25;
-        tmp = i;
+        tmp = rand() % 25;
         student_test.addToBegin(tmp);
         //student_testcopy.addToBegin(tmp);
     }
     cout << "\n Список:" << endl;
     student_test.show();
 
-    //List<int> st(student_test); //исп. конструктор копирования
+    List<int> st(student_test); //исп. конструктор копирования
 
     while (true) {
 
         int variant = menu();
-        //tmp var
-        int *tmpval = NULL;
 
         switch (variant) {
         case 1:
@@ -660,7 +586,7 @@ int main()
             {
                 tmp = rand() % 1000000;
                 student_sort.addToBegin(tmp);
-                student_test1.AddBeforeHead(tmp);
+                //student_test1.AddBeforeHead(tmp);
             }
             cout << " Список из 1000000 элементов. Сортировка.\n" << endl;
             start_time = clock(); // начальное время
@@ -670,7 +596,7 @@ int main()
             cout << " Время работы сортировки слиянием: " << ((float)search_time) / CLOCKS_PER_SEC << " с.";
 
             start_time = clock(); // начальное время
-            student_test1.SortListBiDir();
+                                  //student_test1.SortListBiDir();
             end_time = clock(); // конечное время
             search_time = end_time - start_time; // искомое время
             cout << "\n Время работы сортировки в примере: " << ((float)search_time) / CLOCKS_PER_SEC << " с.\n";
@@ -722,23 +648,8 @@ int main()
 
         case 6: //упорядочение текущего элемента
             cout << "\n\n Упорядочение текущего элемента:\n";
-            student_test.sort();
-            student_test.show();
-            
-            for (int i = 0; i < 10; i++)
-            {
-                std::cout << "Current elem : " << student_test.GetCurrInfPtr() << std::endl;
-                tmpval = &student_test.GetCurrInfPtr();
-                cin >> *tmpval;
-                student_test.sort_now_elem();
-                //cout << student_test << std::endl;
-                student_test.show();
-
-            }
-
-            /*
             student_test.sort_now_elem();
-            student_test.show();*/
+            student_test.show();
             break;
 
         case 7:
@@ -751,29 +662,7 @@ int main()
         case 8: //копирование списка
             cout << "\n Новый список - копия старого\n";
             student_testcopy = student_test;
-            cout << "Создаем с нуля \n";
             student_testcopy.show();
-            cout << endl;
-
-            student_test.addToBegin(57);
-            student_testcopy = student_test;
-            cout << "Старый на 1 меньше нового \n";
-            student_testcopy.show();
-            cout << endl;
-
-            student_testcopy.addToEnd(34);
-            student_testcopy = student_test;
-            cout << "старый на 1 больше нового \n";
-            student_testcopy.show();
-            cout << endl;
-
-            student_test.del_all();
-            student_testcopy = student_test;
-            cout << "Новый это ноль \n";
-            student_testcopy.show();
-            cout << endl;
-
-
             break;
 
         case 9: //получение копии информационной части 
@@ -793,7 +682,7 @@ int main()
 
         case 10:
             cout << " Новый список - копия старого\n";
-            //st.show();
+            st.show();
             break;
 
         case 11:
@@ -810,4 +699,3 @@ int main()
 
     return 0;
 }
-

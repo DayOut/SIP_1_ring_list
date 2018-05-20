@@ -760,7 +760,6 @@ int main()
             student_test.show();
             try
             {
-                student_test.del_all();
                 for (int i = 0; i < 100; i++)
                 {
                     std::cout << "Current elem : " << student_test.GetCurrInfPtr() << std::endl;

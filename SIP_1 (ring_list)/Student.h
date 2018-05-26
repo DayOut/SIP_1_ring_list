@@ -9,10 +9,12 @@
 #define outputstream    std::wostream
 #define inputStream     std::wistream
 #define myout           std::wcout
+#define TS              wchar_t
 #else
 #define outputstream    std::ostream
 #define inputStream     std::istream
 #define myout           std::cout
+#define TS              char
 #endif
 
 
@@ -22,14 +24,14 @@ public:
     Student();
     Student(const Student&);
 
-    void setName (std::basic_string<TCHAR>&);
-    std::basic_string<TCHAR> getName();
+    void setName (std::basic_string<TS>&);
+    std::basic_string<TS> getName();
 
-    void setLastname (std::basic_string<TCHAR>&);
-    std::basic_string<TCHAR> getLastname();
+    void setLastname (std::basic_string<TS>&);
+    std::basic_string<TS> getLastname();
 
-    void setSurname (std::basic_string<TCHAR>&);
-    std::basic_string<TCHAR> getSurname();
+    void setSurname (std::basic_string<TS>&);
+    std::basic_string<TS> getSurname();
 
     void setYearOfBirht (int);
     short int getYearOfBirht();
@@ -60,9 +62,9 @@ private:
     */
     int compareStudents (const Student&) const;
 
-    std::basic_string<TCHAR> _StName{}; //объ€вл€ем строку сразу пустой
-    std::basic_string<TCHAR> _StLastname{};
-    std::basic_string<TCHAR> _StSurname{};
+    std::basic_string<TS> _StName{}; //объ€вл€ем строку сразу пустой
+    std::basic_string<TS> _StLastname{};
+    std::basic_string<TS> _StSurname{};
     short int _StYearOfBirht;
     float _StAverMark;
 };

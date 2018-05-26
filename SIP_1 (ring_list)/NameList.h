@@ -1,7 +1,14 @@
 #pragma once
-
 #include "SIP_1 (ring_list).cpp"
 #include <string>
+
+#ifdef UNICODE 
+#define TS              wchar_t
+#else
+#define TS              char
+#endif
+
+
 
 /*
     как вы€снил суть всех лаб в том, что ты изначально разрабатываешь класс List 
@@ -14,7 +21,7 @@
 
     ---------------------------------------------------------------------------------
     на счет ListName.compare(rList.ListName)
-    string объ€влена€ через std::basic_string<TCHAR> имеет уже набор готовых функций
+    string объ€влена€ через std::basic_string<TS> имеет уже набор готовых функций
     в частности это compare. ћетод уже оптимизированный до нас сравнивающий посимвольно на 
     совпадение двух строк и возвращающий значени€. »х € рассписывал в студенте, но повторюсь 
     0 - полное совпадение
@@ -29,8 +36,8 @@ template <typename T>
 class NamedList : public List<T>
 {
 public:
-    //std::basic_string<TCHAR> это готовое решение массива символов типа TCHAR.
-    NamedList(const std::basic_string<TCHAR>& str)
+    //std::basic_string<TS> это готовое решение массива символов типа TS.
+    NamedList(const std::basic_string<TS>& str)
     {
         ListName = str;
     }
@@ -41,12 +48,12 @@ public:
         *this = right;
     }
 
-    void setListName(std::basic_string<TCHAR>& str)
+    void setListName(std::basic_string<TS>& str)
     {
         ListName = str;
     }
 
-    std::basic_string<TCHAR> getListName() const
+    std::basic_string<TS> getListName() const
     {
         return ListName;
     }
@@ -92,5 +99,5 @@ public:
     }
 
 private:
-    std::basic_string<TCHAR> ListName;
+    std::basic_string<TS> ListName;
 };
